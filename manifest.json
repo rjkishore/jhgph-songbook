@@ -1,7 +1,7 @@
 {
-  "name": "நித்திய ஜீவன் பாடல்கள்",
-  "short_name": "NJP Songs",
-  "description": "Nithiya Jeevan Padalgal — 2611 Tamil Christian songs with chords, offline",
+  "name": "JHGPH Songbook",
+  "short_name": "JHGPH Songbook",
+  "description": "JHGPH Songbook — 2611 Tamil Christian songs (Nithiya Jeevan Padalgal) with chords, offline",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

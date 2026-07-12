@@ -1,4 +1,6 @@
-# நித்திய ஜீவன் பாடல்கள் — NJP Chords App
+# JHGPH Songbook
+
+*(நித்திய ஜீவன் பாடல்கள் — Nithiya Jeevan Padalgal)*
 
 Offline Progressive Web App (PWA) for the **Nithiya Jeevan Padalgal** Tamil
 Christian songbook — 2,611 songs with Tamil lyrics, chords, key, tempo & style.
