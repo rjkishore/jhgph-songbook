@@ -64,6 +64,14 @@
     color: var(--accent);
     white-space: nowrap;
   }
+  .app-logo {
+    height: 34px;
+    width: auto;
+    border-radius: 6px;
+    background: #fff;
+    padding: 2px 5px;
+    flex-shrink: 0;
+  }
   #searchbox {
     flex: 1;
     background: var(--surface2);
@@ -280,7 +288,7 @@
 <body>
 
 <header>
-  <h1>NJP 🎵</h1>
+  <img src="./logo.png" alt="JHG Prayer House Cheyyar" class="app-logo">
   <input id="searchbox" type="text" placeholder="பாடல் எண் அல்லது பெயர் தேடுங்கள்..." autocomplete="off">
   <label class="toggle" title="Show only songs that have chords">
     <input type="checkbox" id="chords-only-toggle">
