@@ -19,6 +19,7 @@ import subprocess, sys, os
 HERE = os.path.dirname(os.path.abspath(__file__))   # tools/
 
 STEPS = [
+    ("churchspot.com (2200+ Tamil songs)", "churchspot_scraper.py"),
     ("thegodsmusic.com (deep Tamil match)", "godsmusic_deep.py"),
     ("tamilchristiansongs.in (fuzzy match)", "fuzzy_chords.py"),
 ]
