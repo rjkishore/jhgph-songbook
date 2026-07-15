@@ -1,3 +1,4 @@
 tools/__pycache__/
 tools/update.log
 tools/*.pkl
+tools/csb_cache/
