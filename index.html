@@ -189,6 +189,8 @@
     #song-detail { display: none; }
     #song-detail.show { display: block; }
     .back-btn { display: inline-flex !important; }
+    header { flex-wrap: wrap; gap: 6px; }
+    #searchbox { min-width: 0; width: 100%; order: 2; flex-basis: 100%; }
   }
 </style>
 </head>
@@ -243,7 +245,7 @@ function transposeLine(line, steps) {
 }
 
 let ALL_SONGS = [], activeSong = null, currentTranspose = 0;
-let chordsOnly = false, favOnly = false;
+let chordsOnly = false, favOnly = false, showChords = true;
 let favs = new Set(JSON.parse(localStorage.getItem('njp-favs') || '[]'));
 let setlist = JSON.parse(localStorage.getItem('njp-setlist') || '[]');
 let fontSize = parseInt(localStorage.getItem('njp-fontsize') || '17', 10);
@@ -252,7 +254,12 @@ function saveFavs() { localStorage.setItem('njp-favs', JSON.stringify([...favs])
 function saveSetlist() { localStorage.setItem('njp-setlist', JSON.stringify(setlist)); updateSetlistBadge(); }
 function applyFontSize() { document.documentElement.style.setProperty('--lyric-size', fontSize + 'px'); }
 
-fetch('./songs.json').then(r => r.json()).then(data => { ALL_SONGS = data; applyFilters(); });
+fetch('./songs.json').then(r => r.json()).then(data => {
+  ALL_SONGS = data;
+  applyFilters();
+  // On mobile show the list by default (detail is hidden until a song is opened)
+  if (window.innerWidth <= 640) document.getElementById('song-list').classList.add('show');
+});
 
 // ── Filters ──
 function applyFilters() {
@@ -350,6 +357,7 @@ function renderDetail(song) {
   if (hasChords) chips += `<span class="info-chip" style="color:#ff4444;border-color:#ff4444">🎸 Chords</span>`;
 
   const transposeGroup = hasChords ? `
+    <button class="tbtn ${showChords?'set-on':''}" id="chords-vis-btn" onclick="toggleChordsVis()">${showChords?'🎸 Chords ON':'🎸 Chords OFF'}</button>
     <div class="group"><span>Key</span>
       <button class="tbtn" onclick="changeTranspose(-1)">−</button>
       <div id="transpose-value">0</div>
@@ -398,17 +406,25 @@ function renderLyrics() {
   const slides = buildSlides(hasChords ? activeSong.chord_lyrics : activeSong.lyrics, hasChords ? activeSong.chords : '', currentTranspose);
   body.innerHTML = slides.map(lines => `
     <div class="slide">
-      ${lines.map(({lyric, chord}) => `
-        <div class="lyric-line ${chord ? 'has-chord' : 'no-chord'}">
-          ${chord ? `<div class="chord-row">${escHtml(chord)}</div>` : ''}
+      ${lines.map(({lyric, chord}) => {
+        const displayChord = showChords && chord;
+        return `<div class="lyric-line ${displayChord ? 'has-chord' : 'no-chord'}">
+          ${displayChord ? `<div class="chord-row">${escHtml(chord)}</div>` : ''}
           <div class="lyric-text">${escHtml(lyric)}</div>
-        </div>`).join('')}
+        </div>`;
+      }).join('')}
     </div>`).join('');
   const tv = document.getElementById('transpose-value');
   if (tv) tv.textContent = currentTranspose >= 0 ? '+' + currentTranspose : '' + currentTranspose;
 }
 
 function changeTranspose(delta, mode) { if (mode === 'reset') currentTranspose = 0; else currentTranspose += delta; renderLyrics(); }
+function toggleChordsVis() {
+  showChords = !showChords;
+  const b = document.getElementById('chords-vis-btn');
+  if (b) { b.classList.toggle('set-on', showChords); b.textContent = showChords ? '🎸 Chords ON' : '🎸 Chords OFF'; }
+  renderLyrics();
+}
 function changeFont(delta) { fontSize = Math.max(13, Math.min(30, fontSize + delta)); localStorage.setItem('njp-fontsize', fontSize); applyFontSize(); }
 
 // ── Favourites ──
