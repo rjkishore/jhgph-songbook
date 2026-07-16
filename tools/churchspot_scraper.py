@@ -304,19 +304,22 @@ def find_njp_match(cs_song, songs_by_title, all_songs_tokens):
     if exact:
         return exact, 1.0
 
-    # Fuzzy: title ≥ 0.80 AND lyric overlap ≥ 0.25
     best_score, best = 0.0, None
     cs_tok = cs_song['tamil_tokens']
     for s, tok in all_songs_tokens:
         ts = title_sim(cs_song['title'], s.get('title', ''))
-        if ts < 0.80:
+        if ts < 0.72:   # lowered from 0.80
             continue
-        ov    = lyric_overlap(cs_tok, tok)
-        score = ts * 0.55 + ov * 0.45
+        if not tok or not cs_tok:
+            # No lyrics to compare — rely on title similarity alone
+            score = ts
+        else:
+            ov    = lyric_overlap(cs_tok, tok)
+            score = ts * 0.60 + ov * 0.40
         if score > best_score:
             best_score, best = score, s
 
-    if best_score >= 0.65:
+    if best_score >= 0.68:
         return best, best_score
     return None, 0.0
 
@@ -337,7 +340,9 @@ def main():
     print('Building NJP token index...')
     all_songs_tokens = []
     for s in songs:
-        text = re.sub(r'<BR>|<slide>', ' ', s.get('lyrics', ''))
+        # Use both lyrics and chord_lyrics so songs with only chord_lyrics still match
+        combined = s.get('lyrics','') + ' ' + re.sub(r'<BR>|<slide>', ' ', s.get('chord_lyrics',''))
+        text = re.sub(r'<BR>|<slide>', ' ', combined)
         tok  = set(re.findall(r'\S+', text))
         s['_tok'] = tok
         all_songs_tokens.append((s, tok))

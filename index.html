@@ -644,7 +644,15 @@ function applyFontSize(){document.documentElement.style.setProperty('--lyric-siz
           fullSongs = songs;
           fullLoaded = true;
           // Build lookup
-          songs.forEach(s=>{DETAIL[s.id]=s});
+          const extraChords = JSON.parse(localStorage.getItem('njp-extra-chords')||'{}');
+          songs.forEach(s=>{
+            // Merge locally saved chords into the song
+            if(extraChords[s.id] && !s.chords){
+              s.chord_lyrics = extraChords[s.id].chord_lyrics;
+              s.chords       = extraChords[s.id].chords;
+            }
+            DETAIL[s.id]=s;
+          });
           // If a song is open and was waiting for lyrics, refresh it
           if(activeSong){
             const full = DETAIL[activeSong.id];
@@ -1087,45 +1095,33 @@ function showFoundChords(data, btn, resultEl){
     </div>`;
 }
 
-async function saveFoundChords(){
+function saveFoundChords(){
   if(!_foundChordsData||!activeSong) return;
   const id = activeSong.id||activeSong.i;
-  // Load full songs.json, update, save back — works only if running locally
-  try {
-    const r = await fetch('./songs.json');
-    const songs = await r.json();
-    const song = songs.find(s=>(s.id||s.i)===id);
-    if(!song){ alert('Song not found in database'); return; }
 
-    if(_foundChordsData.lines && _foundChordsData.lines.length){
-      // Churchspot format
-      const slides = [_foundChordsData.lines];
-      song.chord_lyrics = slides.map(sl=>sl.map(l=>l.lyric).join('<BR>')).join('<slide>');
-      song.chords       = slides.map(sl=>sl.map(l=>l.chord||'').join('<br>')).join('<slide>');
-    } else if(_foundChordsData.rawText){
-      // chordsver raw — store as notes for now
-      song.notes = _foundChordsData.rawText.substring(0,2000);
-    }
-    song.source = (song.source?song.source+',':'')+_foundChordsData.source;
-
-    // Save via download (can't write files from browser directly)
-    const blob = new Blob([JSON.stringify(songs)],{type:'application/json'});
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href=url; a.download='songs.json'; a.click();
-    URL.revokeObjectURL(url);
-
-    // Update in-memory detail
-    if(DETAIL[id]) Object.assign(DETAIL[id], song);
-    activeSong = Object.assign({},activeSong,song);
-    document.getElementById('find-chords-result').innerHTML=
-      `<div class="no-chords-note" style="border-color:var(--accent);color:var(--accent)">
-        ✅ Saved! songs.json downloaded — replace the file in your app folder, then reload.
-      </div>`;
-    setTimeout(()=>renderDetail(activeSong),1500);
-  } catch(e){
-    alert('Could not save: '+e.message);
+  let chord_lyrics='', chords='';
+  if(_foundChordsData.lines && _foundChordsData.lines.length){
+    chord_lyrics = _foundChordsData.lines.map(l=>l.lyric).join('<BR>');
+    chords       = _foundChordsData.lines.map(l=>l.chord||'').join('<br>');
+  } else if(_foundChordsData.rawText){
+    chord_lyrics = _foundChordsData.rawText.substring(0,3000);
+    chords       = '';
   }
+
+  // Save to localStorage — keyed by song id
+  const stored = JSON.parse(localStorage.getItem('njp-extra-chords')||'{}');
+  stored[id] = {chord_lyrics, chords, source:_foundChordsData.source, savedAt: Date.now()};
+  localStorage.setItem('njp-extra-chords', JSON.stringify(stored));
+
+  // Update in-memory so the song shows chords immediately
+  activeSong = Object.assign({}, activeSong, {chord_lyrics, chords});
+  if(DETAIL[id]) Object.assign(DETAIL[id], {chord_lyrics, chords});
+
+  document.getElementById('find-chords-result').innerHTML=
+    `<div class="no-chords-note" style="border-color:var(--accent);color:var(--accent)">
+      ✅ Saved! Chords will show every time you open this song.
+    </div>`;
+  setTimeout(()=>renderDetail(activeSong), 1200);
 }
 
 function discardFoundChords(){
