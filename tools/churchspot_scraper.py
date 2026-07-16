@@ -20,7 +20,11 @@ BASE       = Path(__file__).parent.parent
 SONGS_JSON = BASE / 'songs.json'
 CACHE_FILE = Path(__file__).parent / 'churchspot_cache.pkl'
 
-HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; NJPChords/1.0)'}
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.9',
+}
 DELAY   = 0.6   # seconds between HTTP requests (be polite)
 
 # ─────────────────────────────── HTTP ────────────────────────────────────────
@@ -106,27 +110,125 @@ def slides_to_lyrics(slides):
 # ─────────────────────────────── Crawling ────────────────────────────────────
 
 def get_letter_urls():
-    r = get('https://churchspot.com/')
-    soup = BeautifulSoup(r.text, 'html.parser')
-    seen = set()
-    urls = []
-    for a in soup.find_all('a', href=re.compile(r'search-first.*let=')):
-        href = a['href']
-        if href not in seen:
-            seen.add(href)
-            urls.append(href)
-    return urls
+    # Hardcoded from browser inspection of churchspot.com/search-first/?sfl=1
+    return [
+        'https://churchspot.com/search-first/?sfl=1&let=P',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%83',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%85',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%86',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%87',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%89',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%8A',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%8E',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%8F',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%90',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%92',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%93',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%95',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%95%E0%AE%BE',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%95%E0%AE%BF',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%95%E0%AF%80',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%95%E0%AF%81',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%95%E0%AF%82',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%95%E0%AF%88',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%95%E0%AF%8A',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%95%E0%AF%8B',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%9A',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%9A%E0%AE%BE',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%9A%E0%AE%BF',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%9A%E0%AF%80',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%9A%E0%AF%81',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%9A%E0%AF%82',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%9A%E0%AF%86',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%9A%E0%AF%87',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%9A%E0%AF%8B',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%9C',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%9C%E0%AE%BE',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%9C%E0%AF%80',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%9C%E0%AF%86',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%9C%E0%AF%8B',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%9F%E0%AE%BF',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%A4',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%A4%E0%AE%BE',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%A4%E0%AE%BF',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%A4%E0%AF%81',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%A4%E0%AF%82',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%A4%E0%AF%86',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%A4%E0%AF%87',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%A4%E0%AF%8A',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%A8',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%A8%E0%AE%BE',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%A8%E0%AE%BF',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%A8%E0%AF%80',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%A8%E0%AF%82',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%A8%E0%AF%86',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%A8%E0%AF%87',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%A8%E0%AF%8B',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AA',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AA%E0%AE%BE',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AA%E0%AE%BF',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AA%E0%AF%80',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AA%E0%AF%81',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AA%E0%AF%82',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AA%E0%AF%86',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AA%E0%AF%87',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AA%E0%AF%87%E0%AE%BE',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AA%E0%AF%8A',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AA%E0%AF%8B',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AE',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AE%E0%AE%BE',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AE%E0%AF%80',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AE%E0%AF%81',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AE%E0%AF%86',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AE%E0%AF%87',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AE%E0%AF%8B',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AF%E0%AE%BE',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AF%E0%AF%81',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AF%E0%AF%82',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AF%E0%AF%86',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AF%E0%AF%87',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%AF%E0%AF%8B',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%B0',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%B0%E0%AE%BE',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%B0%E0%AF%8A',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%B2%E0%AF%87',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%B5',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%B5%E0%AE%BE',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%B5%E0%AE%BF',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%B5%E0%AF%80',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%B5%E0%AF%86',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%B5%E0%AF%87',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%B5%E0%AF%88',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%B7%E0%AE%BE',
+        'https://churchspot.com/search-first/?sfl=1&let=%E0%AE%B8%E0%AF%8D',
+    ]
 
 
 def get_song_urls_for_letter(letter_url):
-    r = get(letter_url)
-    soup = BeautifulSoup(r.text, 'html.parser')
     seen, urls = set(), []
-    for a in soup.find_all('a', href=re.compile(r'/\d{4}/\d{2}/\d{2}/')):
-        href = a['href']
-        if href not in seen:
-            seen.add(href)
-            urls.append(href)
+    base = letter_url.split('&pageno=')[0]
+    page = 1
+    while True:
+        url = base if page == 1 else f'{base}&pageno={page}'
+        r = get(url)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        found = []
+        for a in soup.find_all('a', href=re.compile(r'/\d{4}/\d{2}/\d{2}/')):
+            href = a['href']
+            if href not in seen:
+                seen.add(href)
+                found.append(href)
+        urls.extend(found)
+        # Find max page number from pagination links
+        page_links = soup.find_all('a', href=re.compile(r'pageno=\d+'))
+        max_page = max(
+            (int(re.search(r'pageno=(\d+)', a['href']).group(1)) for a in page_links),
+            default=1
+        )
+        if page >= max_page:
+            break
+        page += 1
+        time.sleep(DELAY)
     return urls
 
 

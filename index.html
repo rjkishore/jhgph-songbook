@@ -228,8 +228,40 @@ body{
 .no-chords-note{
   font-size:12px;color:var(--text2);font-style:italic;
   padding:8px 14px;background:var(--surface2);border-radius:10px;
-  border-left:3px solid var(--border);margin-bottom:14px;
+  border-left:3px solid var(--border);margin-bottom:10px;
 }
+.find-chords-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:10px 16px;border-radius:var(--radius);
+  background:var(--surface);border:1px solid var(--accent);
+  color:var(--accent);font-size:14px;font-weight:600;font-family:inherit;
+  cursor:pointer;margin-bottom:14px;transition:all .15s;width:100%;justify-content:center;
+}
+.find-chords-btn:active{opacity:.7}
+.find-chords-btn:disabled{opacity:.4;cursor:default}
+.find-chords-result-box{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px;margin-bottom:14px;
+}
+.find-chords-result-title{font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)}
+.find-chords-preview{
+  font-family:'Consolas',monospace;font-size:13px;
+  background:var(--surface2);border-radius:10px;padding:12px;
+  max-height:200px;overflow-y:auto;margin-bottom:10px;white-space:pre-wrap;
+  color:var(--text);border:1px solid var(--border);
+}
+.find-chords-actions{display:flex;gap:8px}
+.find-chords-save{
+  flex:1;padding:10px;border-radius:10px;font-size:14px;font-weight:600;
+  background:var(--accent);color:#fff;border:none;font-family:inherit;cursor:pointer;
+}
+.find-chords-save:active{opacity:.8}
+.find-chords-discard{
+  padding:10px 14px;border-radius:10px;font-size:14px;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  font-family:inherit;cursor:pointer;
+}
+.find-chords-discard:active{opacity:.7}
 .slide{
   background:var(--surface);border:1px solid var(--border);
   border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;
@@ -302,6 +334,106 @@ body{
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ── Chord Tracker ── */
+#tracker-view{
+  position:absolute;inset:0;background:var(--bg);
+  overflow-y:auto;overscroll-behavior:contain;
+  transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  padding:18px 16px calc(var(--nav-h) + var(--safe-b) + 20px);
+}
+#tracker-view.show{transform:translateX(0)}
+
+.tracker-title{font-size:18px;font-weight:700;margin-bottom:4px}
+.tracker-sub{font-size:12px;color:var(--text2);margin-bottom:20px}
+
+.tracker-drop{
+  border:2px dashed var(--border);border-radius:var(--radius);
+  padding:32px 20px;text-align:center;cursor:pointer;
+  transition:border-color .2s,background .2s;
+  margin-bottom:16px;position:relative;
+}
+.tracker-drop:hover,.tracker-drop.drag{border-color:var(--accent);background:var(--surface)}
+.tracker-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.tracker-drop-icon{font-size:36px;margin-bottom:8px}
+.tracker-drop-text{font-size:14px;color:var(--text2)}
+.tracker-drop-hint{font-size:11px;color:var(--text2);margin-top:4px;opacity:.7}
+
+.tracker-file-info{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 14px;margin-bottom:14px;
+}
+.tracker-file-icon{font-size:24px}
+.tracker-file-name{flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tracker-file-clear{background:none;border:none;color:var(--text2);cursor:pointer;font-size:18px;padding:4px}
+
+.tracker-analyze-btn{
+  width:100%;padding:14px;border-radius:var(--radius);
+  background:var(--accent);color:#fff;
+  border:none;font-size:15px;font-weight:600;font-family:inherit;
+  cursor:pointer;margin-bottom:16px;transition:opacity .2s;
+}
+.tracker-analyze-btn:disabled{opacity:.4;cursor:default}
+.tracker-analyze-btn:active:not(:disabled){opacity:.8}
+
+.tracker-progress-wrap{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px;margin-bottom:16px;display:none;
+}
+.tracker-progress-label{font-size:13px;color:var(--text2);margin-bottom:8px}
+.tracker-progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.tracker-progress-fill{height:100%;background:var(--accent);border-radius:3px;width:0%;transition:width .2s}
+
+/* Playback */
+.tracker-player{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px;margin-bottom:14px;display:none;
+}
+.tracker-player-title{font-size:12px;color:var(--text2);margin-bottom:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.tracker-timeline-bar{
+  position:relative;height:6px;background:var(--border);border-radius:3px;
+  cursor:pointer;margin-bottom:8px;
+}
+.tracker-timeline-fill{position:absolute;left:0;top:0;height:100%;background:var(--accent);border-radius:3px;pointer-events:none}
+.tracker-time-row{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);font-family:monospace;margin-bottom:12px}
+.tracker-controls{display:flex;align-items:center;justify-content:center;gap:16px}
+.tracker-ctrl-btn{
+  width:42px;height:42px;border-radius:50%;
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);cursor:pointer;font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.tracker-ctrl-btn.play-btn{
+  width:52px;height:52px;background:var(--accent);border-color:var(--accent);color:#fff;font-size:22px;
+}
+.tracker-ctrl-btn:active{opacity:.6}
+
+/* Chord display */
+.tracker-current-chord{
+  text-align:center;padding:20px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  margin-bottom:14px;display:none;
+}
+.tracker-chord-label{font-size:12px;color:var(--text2);margin-bottom:6px}
+.tracker-chord-name{font-size:52px;font-weight:700;color:var(--chord);font-family:'Consolas',monospace;line-height:1}
+.tracker-chord-next{font-size:13px;color:var(--text2);margin-top:8px}
+
+/* Timeline list */
+.tracker-list{display:none;margin-bottom:14px}
+.tracker-list-title{font-size:12px;color:var(--text2);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
+.tracker-chord-row{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 12px;border-radius:10px;cursor:pointer;
+  transition:background .15s;margin-bottom:2px;
+}
+.tracker-chord-row:hover{background:var(--surface)}
+.tracker-chord-row.active-chord{background:var(--surface2);border-left:3px solid var(--chord)}
+.tracker-chord-time{font-size:11px;color:var(--text2);font-family:monospace;width:44px;flex-shrink:0}
+.tracker-chord-val{font-size:16px;font-weight:700;color:var(--chord);font-family:'Consolas',monospace;width:56px}
+.tracker-chord-bar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.tracker-chord-bar-fill{height:100%;border-radius:2px;background:var(--chord);opacity:.5}
 </style>
 </head>
 <body>
@@ -350,6 +482,66 @@ body{
         <div class="list-empty" style="margin-top:30vh">ஒரு பாடலை தேர்ந்தெடுக்கவும்</div>
       </div>
     </div>
+
+    <!-- Chord Tracker view -->
+    <div id="tracker-view">
+      <div class="tracker-title">🎵 Chord Tracker</div>
+      <div class="tracker-sub">பாடலை upload செய்து chords கண்டுபிடிக்கவும்</div>
+
+      <!-- Drop zone -->
+      <div class="tracker-drop" id="tracker-drop">
+        <input type="file" id="tracker-file-input" accept="audio/*">
+        <div class="tracker-drop-icon">🎵</div>
+        <div class="tracker-drop-text">பாடலை தேர்வு செய்யவும்</div>
+        <div class="tracker-drop-hint">MP3, WAV, M4A, OGG supported</div>
+      </div>
+
+      <!-- File info -->
+      <div class="tracker-file-info" id="tracker-file-info" style="display:none">
+        <span class="tracker-file-icon">🎵</span>
+        <span class="tracker-file-name" id="tracker-file-name"></span>
+        <button class="tracker-file-clear" id="tracker-clear-btn" title="Remove">✕</button>
+      </div>
+
+      <!-- Analyze button -->
+      <button class="tracker-analyze-btn" id="tracker-analyze-btn" disabled>Analyze Chords</button>
+
+      <!-- Progress -->
+      <div class="tracker-progress-wrap" id="tracker-progress-wrap">
+        <div class="tracker-progress-label" id="tracker-progress-label">Analyzing...</div>
+        <div class="tracker-progress-bar"><div class="tracker-progress-fill" id="tracker-progress-fill"></div></div>
+      </div>
+
+      <!-- Current chord display -->
+      <div class="tracker-current-chord" id="tracker-current-chord">
+        <div class="tracker-chord-label">CURRENT CHORD</div>
+        <div class="tracker-chord-name" id="tracker-chord-name">—</div>
+        <div class="tracker-chord-next" id="tracker-chord-next"></div>
+      </div>
+
+      <!-- Player -->
+      <div class="tracker-player" id="tracker-player">
+        <div class="tracker-player-title">Now Playing</div>
+        <div class="tracker-timeline-bar" id="tracker-timeline-bar">
+          <div class="tracker-timeline-fill" id="tracker-timeline-fill" style="width:0%"></div>
+        </div>
+        <div class="tracker-time-row">
+          <span id="tracker-time-cur">0:00</span>
+          <span id="tracker-time-tot">0:00</span>
+        </div>
+        <div class="tracker-controls">
+          <button class="tracker-ctrl-btn" id="tracker-rew-btn" title="−10s">⏪</button>
+          <button class="tracker-ctrl-btn play-btn" id="tracker-play-btn">▶</button>
+          <button class="tracker-ctrl-btn" id="tracker-fwd-btn" title="+10s">⏩</button>
+        </div>
+      </div>
+
+      <!-- Chord timeline list -->
+      <div class="tracker-list" id="tracker-list">
+        <div class="tracker-list-title">Chord Timeline</div>
+        <div id="tracker-chord-list"></div>
+      </div>
+    </div>
   </div>
 
   <!-- Bottom nav (mobile only) -->
@@ -365,6 +557,10 @@ body{
     <button class="nav-tab" id="tab-favs" onclick="toggleFilter('favs')">
       <span class="nav-icon">★</span>
       <span class="nav-label">Favourites</span>
+    </button>
+    <button class="nav-tab" id="tab-tracker" onclick="openTracker()">
+      <span class="nav-icon">🎹</span>
+      <span class="nav-label">Tracker</span>
     </button>
     <button class="nav-tab" id="tab-set" onclick="openSetlistSheet()">
       <span class="nav-icon">📋</span>
@@ -498,8 +694,11 @@ function setActiveTab(tab, runFilters=true){
   document.getElementById('tab-songs').classList.toggle('active', tab==='songs');
   document.getElementById('tab-chords').classList.toggle('active', tab==='chords');
   document.getElementById('tab-favs').classList.toggle('active', tab==='favs');
+  document.getElementById('tab-tracker').classList.toggle('active', tab==='tracker');
   document.getElementById('chords-pill').classList.toggle('active', chordsOnly);
   document.getElementById('fav-pill').classList.toggle('active', favOnly);
+  // Show/hide tracker view
+  document.getElementById('tracker-view').classList.toggle('show', tab==='tracker');
   if(runFilters) applyFilters();
 }
 
@@ -656,7 +855,9 @@ function renderLyrics(){
     body.innerHTML='<div class="no-chords-note">இந்த பாடலுக்கு lyrics இல்லை</div>';return;
   }
   if(!hasChords){
-    body.innerHTML=`<div class="no-chords-note">Chords இல்லை — lyrics மட்டுமே காட்டப்படுகிறது</div>`+
+    body.innerHTML=`<div class="no-chords-note" style="margin-bottom:10px">Chords இல்லை — lyrics மட்டுமே காட்டப்படுகிறது</div>
+      <button class="find-chords-btn" id="find-chords-btn" onclick="findChordsOnline()">🔍 Find Chords Online</button>
+      <div id="find-chords-result"></div>`+
       slides.map(lines=>`<div class="slide">${lines.map(({lyric})=>
         `<div class="lyric-line no-chord"><div class="lyric-text">${escHtml(lyric)}</div></div>`
       ).join('')}</div>`).join('');
@@ -767,7 +968,440 @@ function updateSetBadge(){
   const b=document.getElementById('setlist-badge');
   if(b)b.textContent=setlist.length?'('+setlist.length+')':'';
 }
+// ── Find Chords Online ─────────────────────────────────────────────────────
+async function findChordsOnline(){
+  if(!activeSong) return;
+  const btn = document.getElementById('find-chords-btn');
+  const resultEl = document.getElementById('find-chords-result');
+  if(!btn||!resultEl) return;
+
+  const title = activeSong.title||activeSong.t||activeSong.name||'';
+  btn.disabled = true;
+  btn.textContent = '🔍 Searching...';
+  resultEl.innerHTML = '';
+
+  // Try churchspot.com via CORS proxy
+  const query = encodeURIComponent(title);
+  const PROXY = 'https://corsproxy.io/?';
+  const searchUrl = `https://churchspot.com/search-results/?skeyword=${query}&submit=SEARCH`;
+
+  try {
+    const r = await fetch(PROXY + encodeURIComponent(searchUrl));
+    const html = await r.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    // Find first song link
+    const links = [...doc.querySelectorAll('a[href]')]
+      .map(a=>a.href)
+      .filter(h=>h.match(/churchspot\.com\/\d{4}\/\d{2}\/\d{2}\//));
+
+    if(!links.length){
+      // Try chordsver.com
+      await findChordsFromChordsver(title, btn, resultEl);
+      return;
+    }
+
+    // Fetch first song page
+    const songR = await fetch(PROXY + encodeURIComponent(links[0]));
+    const songHtml = await songR.text();
+    const songDoc = parser.parseFromString(songHtml, 'text/html');
+    const parsed = parseChurchspotDoc(songDoc);
+    if(parsed){
+      showFoundChords(parsed, btn, resultEl);
+    } else {
+      await findChordsFromChordsver(title, btn, resultEl);
+    }
+  } catch(e){
+    resultEl.innerHTML=`<div class="no-chords-note">⚠ Network error. Check internet connection.</div>`;
+    btn.disabled=false; btn.textContent='🔍 Find Chords Online';
+  }
+}
+
+function parseChurchspotDoc(doc){
+  const songpre = doc.querySelector('.songpre');
+  if(!songpre) return null;
+  const lines = [];
+  let pendingChord = '';
+  for(const child of songpre.children){
+    const cls = child.className||'';
+    if(cls.includes('chordline')) pendingChord = child.textContent;
+    else if(cls.includes('lyricline')){
+      const lyric = child.textContent.trim();
+      if(lyric){ lines.push({lyric, chord:pendingChord.trim()}); pendingChord=''; }
+    }
+  }
+  if(!lines.length) return null;
+  const chordLines = lines.map(l=>l.chord).filter(Boolean);
+  if(!chordLines.length) return null;
+  // Format preview
+  const preview = lines.map(l=>(l.chord?l.chord+'\n':'')+l.lyric).join('\n');
+  return {lines, preview, source:'churchspot.com'};
+}
+
+async function findChordsFromChordsver(title, btn, resultEl){
+  const PROXY = 'https://corsproxy.io/?';
+  const query = encodeURIComponent(title);
+  try {
+    const r = await fetch(PROXY + encodeURIComponent(`https://chordsver.com/?s=${query}`));
+    const html = await r.text();
+    const doc = new DOMParser().parseFromString(html,'text/html');
+    const link = [...doc.querySelectorAll('a[href*="chordsver.com"]')]
+      .find(a=>a.href.includes('/tamil/'));
+    if(!link){ showNotFound(btn,resultEl); return; }
+    const sr = await fetch(PROXY + encodeURIComponent(link.href));
+    const sh = await sr.text();
+    const sd = new DOMParser().parseFromString(sh,'text/html');
+    const pre = sd.querySelector('pre');
+    if(!pre){ showNotFound(btn,resultEl); return; }
+    // Extract chords from span.scale-key
+    const clone = pre.cloneNode(true);
+    const chordSpans = clone.querySelectorAll('span.scale-key');
+    const chordTexts = [...chordSpans].map(s=>s.textContent);
+    // Build lines
+    const rawText = pre.textContent;
+    const preview = rawText.substring(0,600)+'...';
+    showFoundChords({lines:[], preview, rawText, source:'chordsver.com'}, btn, resultEl);
+  } catch(e){
+    showNotFound(btn,resultEl);
+  }
+}
+
+function showNotFound(btn, resultEl){
+  resultEl.innerHTML=`<div class="no-chords-note">😔 இந்த பாடலுக்கு online-ல் chords கிடைக்கவில்லை.</div>`;
+  btn.disabled=false; btn.textContent='🔍 Try Again';
+}
+
+let _foundChordsData = null;
+function showFoundChords(data, btn, resultEl){
+  _foundChordsData = data;
+  btn.style.display='none';
+  resultEl.innerHTML=`
+    <div class="find-chords-result-box">
+      <div class="find-chords-result-title">✅ Found on ${data.source}</div>
+      <div class="find-chords-preview">${escHtml(data.preview)}</div>
+      <div class="find-chords-actions">
+        <button class="find-chords-save" onclick="saveFoundChords()">💾 Save to this song</button>
+        <button class="find-chords-discard" onclick="discardFoundChords()">✕</button>
+      </div>
+    </div>`;
+}
+
+async function saveFoundChords(){
+  if(!_foundChordsData||!activeSong) return;
+  const id = activeSong.id||activeSong.i;
+  // Load full songs.json, update, save back — works only if running locally
+  try {
+    const r = await fetch('./songs.json');
+    const songs = await r.json();
+    const song = songs.find(s=>(s.id||s.i)===id);
+    if(!song){ alert('Song not found in database'); return; }
+
+    if(_foundChordsData.lines && _foundChordsData.lines.length){
+      // Churchspot format
+      const slides = [_foundChordsData.lines];
+      song.chord_lyrics = slides.map(sl=>sl.map(l=>l.lyric).join('<BR>')).join('<slide>');
+      song.chords       = slides.map(sl=>sl.map(l=>l.chord||'').join('<br>')).join('<slide>');
+    } else if(_foundChordsData.rawText){
+      // chordsver raw — store as notes for now
+      song.notes = _foundChordsData.rawText.substring(0,2000);
+    }
+    song.source = (song.source?song.source+',':'')+_foundChordsData.source;
+
+    // Save via download (can't write files from browser directly)
+    const blob = new Blob([JSON.stringify(songs)],{type:'application/json'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href=url; a.download='songs.json'; a.click();
+    URL.revokeObjectURL(url);
+
+    // Update in-memory detail
+    if(DETAIL[id]) Object.assign(DETAIL[id], song);
+    activeSong = Object.assign({},activeSong,song);
+    document.getElementById('find-chords-result').innerHTML=
+      `<div class="no-chords-note" style="border-color:var(--accent);color:var(--accent)">
+        ✅ Saved! songs.json downloaded — replace the file in your app folder, then reload.
+      </div>`;
+    setTimeout(()=>renderDetail(activeSong),1500);
+  } catch(e){
+    alert('Could not save: '+e.message);
+  }
+}
+
+function discardFoundChords(){
+  _foundChordsData=null;
+  const btn=document.getElementById('find-chords-btn');
+  const res=document.getElementById('find-chords-result');
+  if(btn){btn.style.display='';btn.disabled=false;btn.textContent='🔍 Find Chords Online';}
+  if(res) res.innerHTML='';
+}
+
 function openSetlistSheet(){document.getElementById('setlist-sheet').classList.add('open');renderSetlist()}
+
+// ── Chord Tracker ──────────────────────────────────────────────────────────
+function openTracker(){
+  setActiveTab('tracker');
+  document.getElementById('detail-view').classList.remove('show');
+}
+
+(function initTracker(){
+  const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  // Chord templates: [root_index, ...interval_semitones]
+  const CHORD_TEMPLATES = [
+    {name:'',  intervals:[0,4,7]},   // major
+    {name:'m', intervals:[0,3,7]},   // minor
+    {name:'7', intervals:[0,4,7,10]},// dominant 7
+    {name:'m7',intervals:[0,3,7,10]},// minor 7
+    {name:'maj7',intervals:[0,4,7,11]},// major 7
+    {name:'sus2',intervals:[0,2,7]},
+    {name:'sus4',intervals:[0,5,7]},
+    {name:'dim', intervals:[0,3,6]},
+    {name:'aug', intervals:[0,4,8]},
+  ];
+
+  let audioBuffer=null, audioCtx=null, sourceNode=null;
+  let chordMap=[], isPlaying=false, startTime=0, pauseOffset=0;
+  let animFrame=null, currentFile=null;
+
+  const fileInput  = document.getElementById('tracker-file-input');
+  const drop       = document.getElementById('tracker-drop');
+  const fileInfo   = document.getElementById('tracker-file-info');
+  const fileName   = document.getElementById('tracker-file-name');
+  const clearBtn   = document.getElementById('tracker-clear-btn');
+  const analyzeBtn = document.getElementById('tracker-analyze-btn');
+  const progWrap   = document.getElementById('tracker-progress-wrap');
+  const progFill   = document.getElementById('tracker-progress-fill');
+  const progLabel  = document.getElementById('tracker-progress-label');
+  const player     = document.getElementById('tracker-player');
+  const playBtn    = document.getElementById('tracker-play-btn');
+  const rewBtn     = document.getElementById('tracker-rew-btn');
+  const fwdBtn     = document.getElementById('tracker-fwd-btn');
+  const timeBar    = document.getElementById('tracker-timeline-bar');
+  const timeFill   = document.getElementById('tracker-timeline-fill');
+  const timeCur    = document.getElementById('tracker-time-cur');
+  const timeTot    = document.getElementById('tracker-time-tot');
+  const curChordEl = document.getElementById('tracker-current-chord');
+  const chordName  = document.getElementById('tracker-chord-name');
+  const chordNext  = document.getElementById('tracker-chord-next');
+  const listWrap   = document.getElementById('tracker-list');
+  const chordList  = document.getElementById('tracker-chord-list');
+
+  function fmt(s){s=Math.floor(s);return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`}
+
+  function chromaFromBuffer(buf, startSample, endSample){
+    const ch = new Float32Array(12);
+    const hop = 128;
+    for(let i=startSample;i<endSample-512;i+=hop){
+      for(let k=0;k<12;k++){
+        // Chromagram: sum energy at harmonics for each pitch class
+        const f0 = 130.81 * Math.pow(2, k/12); // C2 base
+        const sr = buf.sampleRate;
+        let val = 0;
+        for(let h=1;h<=6;h++){
+          const period = sr/(f0*h);
+          if(i+Math.round(period)<endSample){
+            val += Math.abs(buf.getChannelData(0)[i] * buf.getChannelData(0)[Math.min(endSample-1,i+Math.round(period))]);
+          }
+        }
+        ch[k] += val;
+      }
+    }
+    // Normalize
+    const mx = Math.max(...ch,1e-9);
+    return ch.map(v=>v/mx);
+  }
+
+  function detectChord(chroma){
+    let best=null, bestScore=-1;
+    for(let root=0;root<12;root++){
+      for(const tmpl of CHORD_TEMPLATES){
+        let score=0;
+        for(const iv of tmpl.intervals) score+=chroma[(root+iv)%12];
+        // Penalize notes not in chord
+        let penalty=0;
+        for(let n=0;n<12;n++){
+          if(!tmpl.intervals.includes((n-root+12)%12)) penalty+=chroma[n]*0.4;
+        }
+        score-=penalty;
+        if(score>bestScore){bestScore=score;best=NOTES[root]+tmpl.name;}
+      }
+    }
+    return best||'—';
+  }
+
+  async function analyzeFile(file){
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    const arrayBuf = await file.arrayBuffer();
+    progLabel.textContent='Decoding audio...';
+    progFill.style.width='10%';
+    progWrap.style.display='block';
+    analyzeBtn.disabled=true;
+
+    audioBuffer = await audioCtx.decodeAudioData(arrayBuf);
+    const duration = audioBuffer.duration;
+    const WINDOW = 0.5; // seconds per chord detection window
+    const HOP    = 0.25;
+    const steps  = Math.floor((duration-WINDOW)/HOP);
+    chordMap=[];
+
+    for(let i=0;i<steps;i++){
+      const t = i*HOP;
+      const s0 = Math.floor(t*audioBuffer.sampleRate);
+      const s1 = Math.floor((t+WINDOW)*audioBuffer.sampleRate);
+      const ch  = chromaFromBuffer(audioBuffer, s0, s1);
+      const chord = detectChord(ch);
+      chordMap.push({t, chord});
+      if(i%10===0){
+        const pct = Math.round(10+80*(i/steps));
+        progFill.style.width=pct+'%';
+        progLabel.textContent=`Analyzing... ${Math.round(100*i/steps)}%`;
+        await new Promise(r=>setTimeout(r,0)); // yield to UI
+      }
+    }
+
+    // Compress: merge consecutive same chords
+    const compressed=[];
+    chordMap.forEach(({t,chord})=>{
+      if(!compressed.length||compressed[compressed.length-1].chord!==chord)
+        compressed.push({t,chord,duration:HOP});
+      else
+        compressed[compressed.length-1].duration+=HOP;
+    });
+    chordMap=compressed;
+
+    progFill.style.width='100%';
+    progLabel.textContent='Done!';
+    setTimeout(()=>{progWrap.style.display='none';},800);
+
+    timeTot.textContent=fmt(duration);
+    player.style.display='block';
+    curChordEl.style.display='block';
+    listWrap.style.display='block';
+    renderChordList();
+    analyzeBtn.disabled=false;
+    analyzeBtn.textContent='Re-analyze';
+  }
+
+  function renderChordList(){
+    const maxDur = Math.max(...chordMap.map(c=>c.duration),1);
+    chordList.innerHTML = chordMap.map((c,i)=>`
+      <div class="tracker-chord-row" id="tcr-${i}" onclick="trackerSeek(${c.t})">
+        <span class="tracker-chord-time">${fmt(c.t)}</span>
+        <span class="tracker-chord-val">${c.chord}</span>
+        <div class="tracker-chord-bar"><div class="tracker-chord-bar-fill" style="width:${Math.round(100*c.duration/maxDur)}%"></div></div>
+      </div>`).join('');
+  }
+
+  function getCurrentChordIdx(t){
+    let idx=0;
+    for(let i=0;i<chordMap.length;i++){if(chordMap[i].t<=t)idx=i;}
+    return idx;
+  }
+
+  function tick(){
+    if(!isPlaying||!audioBuffer) return;
+    const elapsed = audioCtx.currentTime - startTime + pauseOffset;
+    const dur = audioBuffer.duration;
+    if(elapsed>=dur){stopAudio();return;}
+    const pct = elapsed/dur*100;
+    timeFill.style.width=pct+'%';
+    timeCur.textContent=fmt(elapsed);
+
+    const idx=getCurrentChordIdx(elapsed);
+    const c=chordMap[idx];
+    if(c){
+      chordName.textContent=c.chord;
+      const next=chordMap[idx+1];
+      chordNext.textContent=next?`Next: ${next.chord} @ ${fmt(next.t)}`:'';
+      // Highlight in list
+      document.querySelectorAll('.tracker-chord-row').forEach((el,i)=>{
+        el.classList.toggle('active-chord',i===idx);
+        if(i===idx) el.scrollIntoView({block:'nearest',behavior:'smooth'});
+      });
+    }
+    animFrame=requestAnimationFrame(tick);
+  }
+
+  function playAudio(){
+    if(!audioBuffer) return;
+    if(audioCtx.state==='suspended') audioCtx.resume();
+    sourceNode=audioCtx.createBufferSource();
+    sourceNode.buffer=audioBuffer;
+    sourceNode.connect(audioCtx.destination);
+    startTime=audioCtx.currentTime;
+    sourceNode.start(0, pauseOffset);
+    isPlaying=true;
+    playBtn.textContent='⏸';
+    animFrame=requestAnimationFrame(tick);
+    sourceNode.onended=()=>{if(isPlaying)stopAudio();};
+  }
+
+  function pauseAudio(){
+    if(!isPlaying) return;
+    pauseOffset += audioCtx.currentTime - startTime;
+    sourceNode.stop();
+    isPlaying=false;
+    playBtn.textContent='▶';
+    cancelAnimationFrame(animFrame);
+  }
+
+  function stopAudio(){
+    if(sourceNode){try{sourceNode.stop();}catch(e){}}
+    isPlaying=false;
+    pauseOffset=0;
+    playBtn.textContent='▶';
+    cancelAnimationFrame(animFrame);
+    timeFill.style.width='0%';
+    timeCur.textContent='0:00';
+  }
+
+  window.trackerSeek=function(t){
+    pauseOffset=Math.max(0,Math.min(t,audioBuffer.duration-0.1));
+    if(isPlaying){sourceNode.stop();isPlaying=false;playAudio();}
+    else{
+      const pct=pauseOffset/audioBuffer.duration*100;
+      timeFill.style.width=pct+'%';
+      timeCur.textContent=fmt(pauseOffset);
+      const idx=getCurrentChordIdx(pauseOffset);
+      if(chordMap[idx]) chordName.textContent=chordMap[idx].chord;
+    }
+  };
+
+  function loadFile(file){
+    if(!file||!file.type.startsWith('audio/'))return;
+    currentFile=file;
+    drop.style.display='none';
+    fileName.textContent=file.name;
+    fileInfo.style.display='flex';
+    analyzeBtn.disabled=false;
+    stopAudio();chordMap=[];
+    player.style.display='none';
+    curChordEl.style.display='none';
+    listWrap.style.display='none';
+    chordName.textContent='—';
+  }
+
+  fileInput.addEventListener('change',e=>{if(e.target.files[0])loadFile(e.target.files[0])});
+  drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('drag')});
+  drop.addEventListener('dragleave',()=>drop.classList.remove('drag'));
+  drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('drag');loadFile(e.dataTransfer.files[0])});
+  clearBtn.addEventListener('click',()=>{
+    stopAudio();currentFile=null;chordMap=[];audioBuffer=null;
+    drop.style.display='';fileInfo.style.display='none';
+    analyzeBtn.disabled=true;analyzeBtn.textContent='Analyze Chords';
+    player.style.display='none';curChordEl.style.display='none';listWrap.style.display='none';
+    fileInput.value='';
+  });
+  analyzeBtn.addEventListener('click',()=>{if(currentFile)analyzeFile(currentFile)});
+  playBtn.addEventListener('click',()=>{isPlaying?pauseAudio():playAudio()});
+  rewBtn.addEventListener('click',()=>trackerSeek(pauseOffset+(audioCtx?audioCtx.currentTime-startTime:0)-10));
+  fwdBtn.addEventListener('click',()=>trackerSeek(pauseOffset+(audioCtx?audioCtx.currentTime-startTime:0)+10));
+  timeBar.addEventListener('click',e=>{
+    if(!audioBuffer)return;
+    const pct=e.offsetX/timeBar.offsetWidth;
+    trackerSeek(pct*audioBuffer.duration);
+  });
+})();
 function closeSetlistSheet(){document.getElementById('setlist-sheet').classList.remove('open')}
 function clearSetlist(){if(confirm('Set list அழிக்கவா?')){setlist=[];saveSetlist();renderSetlist();if(activeSong)renderDetail(activeSong)}}
 function renderSetlist(){
