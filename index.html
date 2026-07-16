@@ -814,56 +814,72 @@ document.getElementById('search-clear').addEventListener('click',()=>{
 
 // ── Voice Search ──────────────────────────────────────────────────────────
 (function initVoiceSearch(){
-  const voiceBtn = document.getElementById('voice-btn');
+  const voiceBtn  = document.getElementById('voice-btn');
   const searchbox = document.getElementById('searchbox');
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  if(!SpeechRecognition){
-    voiceBtn.style.display='none'; // hide if browser doesn't support
-    return;
-  }
-
-  const recog = new SpeechRecognition();
-  recog.continuous = false;
-  recog.interimResults = true;
-  recog.maxAlternatives = 1;
-  // Support both Tamil and English — user can speak either
-  recog.lang = 'ta-IN';
+  if(!SpeechRecognition){ voiceBtn.style.display='none'; return; }
 
   let listening = false;
+  let recog = null;
+
+  function makeRecog(lang){
+    const r = new SpeechRecognition();
+    r.continuous      = false;
+    r.interimResults  = true;
+    r.maxAlternatives = 3;
+    r.lang = lang;
+
+    r.onstart = ()=>{
+      listening = true;
+      voiceBtn.classList.add('listening');
+      searchbox.placeholder = '🎤 கேட்கிறேன்...';
+    };
+    r.onresult = (e)=>{
+      // Pick the best transcript from any alternative
+      let best = '';
+      for(let i=0;i<e.results.length;i++){
+        for(let j=0;j<e.results[i].length;j++){
+          if(e.results[i][j].transcript.length > best.length)
+            best = e.results[i][j].transcript;
+        }
+      }
+      searchbox.value = best;
+      applyFilters();
+      document.getElementById('search-clear').style.display = best ? 'block' : 'none';
+    };
+    r.onerror = (e)=>{
+      listening = false;
+      voiceBtn.classList.remove('listening');
+      searchbox.placeholder = 'பாடல் எண் அல்லது பெயர் தேடுங்கள்...';
+      if(e.error==='not-allowed'){
+        alert('Microphone permission denied. Please allow microphone access.');
+      } else if(e.error==='language-not-supported' && lang!==''){
+        // Fallback to device default language
+        recog = makeRecog('');
+        try{ recog.start(); } catch(err){}
+      }
+      // no-speech / aborted → silently reset
+    };
+    r.onend = ()=>{
+      listening = false;
+      voiceBtn.classList.remove('listening');
+      searchbox.placeholder = 'பாடல் எண் அல்லது பெயர் தேடுங்கள்...';
+    };
+    return r;
+  }
+
+  // Try Tamil first; onerror falls back to device default
+  recog = makeRecog('ta-IN');
 
   voiceBtn.addEventListener('click', ()=>{
     if(listening){ recog.stop(); return; }
-    try{ recog.start(); } catch(e){}
-  });
-
-  recog.onstart = ()=>{
-    listening = true;
-    voiceBtn.classList.add('listening');
-    voiceBtn.title = 'Listening... (tap to stop)';
-    searchbox.placeholder = '🎤 கேட்கிறேன்...';
-  };
-
-  recog.onresult = (e)=>{
-    const transcript = e.results[0][0].transcript;
-    searchbox.value = transcript;
-    applyFilters();
-    document.getElementById('search-clear').style.display = transcript ? 'block' : 'none';
-  };
-
-  recog.onerror = (e)=>{
-    if(e.error === 'no-speech') return;
-    if(e.error === 'not-allowed'){
-      alert('Microphone permission denied. Please allow microphone access and try again.');
+    // Resume AudioContext if blocked (needed on some browsers)
+    try{ recog.start(); } catch(e){
+      // If already started, abort and restart
+      try{ recog.abort(); recog.start(); } catch(err){}
     }
-  };
-
-  recog.onend = ()=>{
-    listening = false;
-    voiceBtn.classList.remove('listening');
-    voiceBtn.title = 'Voice search';
-    searchbox.placeholder = 'பாடல் எண் அல்லது பெயர் தேடுங்கள்...';
-  };
+  });
 })();
 
 // ── Tab management ──
@@ -1366,8 +1382,10 @@ function openSetlistSheet(){document.getElementById('setlist-sheet').classList.a
 
 // ── Chord Tracker ──────────────────────────────────────────────────────────
 function openTracker(){
-  setActiveTab('tracker');
+  // Close detail view first so it doesn't overlap tracker
   document.getElementById('detail-view').classList.remove('show');
+  releaseWakeLock();
+  setActiveTab('tracker');
 }
 
 (function initTracker(){
@@ -1620,8 +1638,12 @@ function openTracker(){
   });
   analyzeBtn.addEventListener('click',()=>{if(currentFile)analyzeFile(currentFile)});
   playBtn.addEventListener('click',()=>{isPlaying?pauseAudio():playAudio()});
-  rewBtn.addEventListener('click',()=>trackerSeek(pauseOffset+(audioCtx?audioCtx.currentTime-startTime:0)-10));
-  fwdBtn.addEventListener('click',()=>trackerSeek(pauseOffset+(audioCtx?audioCtx.currentTime-startTime:0)+10));
+  function getCurrentPlayTime(){
+    if(isPlaying && audioCtx) return pauseOffset + (audioCtx.currentTime - startTime);
+    return pauseOffset;
+  }
+  rewBtn.addEventListener('click',()=>trackerSeek(Math.max(0, getCurrentPlayTime()-10)));
+  fwdBtn.addEventListener('click',()=>trackerSeek(Math.min(audioBuffer?audioBuffer.duration-0.1:0, getCurrentPlayTime()+10)));
   timeBar.addEventListener('click',e=>{
     if(!audioBuffer)return;
     const pct=e.offsetX/timeBar.offsetWidth;
