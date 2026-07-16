@@ -1,6 +1,6 @@
 // NJP Songs — Service Worker (offline support)
 // Bump CACHE_VERSION whenever app files change to force an update.
-const CACHE_VERSION = 'njp-v9';
+const CACHE_VERSION = 'njp-v10';
 const SHELL = [
   './index.html',
   './manifest.json',

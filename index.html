@@ -463,7 +463,9 @@ body{
   border-radius:0 0 8px 8px;cursor:pointer;
   display:flex;align-items:flex-end;justify-content:center;
   padding-bottom:7px;font-size:10px;font-weight:700;color:#555;
-  z-index:1;transition:background .08s;-webkit-tap-highlight-color:transparent;
+  z-index:1;transition:background .08s;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;user-select:none;-webkit-user-select:none;
 }
 :root[data-theme="light"] .piano-wkey{background:#fff}
 .piano-wkey:active,.piano-wkey.pressed{background:#ddd6fe}
@@ -475,7 +477,9 @@ body{
   border-radius:0 0 5px 5px;cursor:pointer;z-index:2;
   display:flex;align-items:flex-end;justify-content:center;
   padding-bottom:4px;font-size:9px;color:#7c7aaa;
-  transition:background .08s;-webkit-tap-highlight-color:transparent;
+  transition:background .08s;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;user-select:none;-webkit-user-select:none;
 }
 .piano-bkey:active,.piano-bkey.pressed{background:linear-gradient(180deg,#4c1d95,#6d28d9)}
 .piano-bkey.lit{background:linear-gradient(180deg,#fb923c,#f43f5e) !important;color:#fff;box-shadow:0 0 10px rgba(251,146,60,.5)}
@@ -712,12 +716,16 @@ body{
       <div class="tracker-title">🎵 Chord Tracker</div>
       <div class="tracker-sub">பாடலை upload செய்து chords கண்டுபிடிக்கவும்</div>
 
+      <!-- Hidden file input (outside drop zone for iOS/Android reliability) -->
+      <input type="file" id="tracker-file-input"
+        accept="audio/*,video/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.mp4"
+        style="position:absolute;width:0;height:0;opacity:0;pointer-events:none">
+
       <!-- Drop zone -->
-      <div class="tracker-drop" id="tracker-drop">
-        <input type="file" id="tracker-file-input" accept="audio/*">
+      <div class="tracker-drop" id="tracker-drop" onclick="document.getElementById('tracker-file-input').click()">
         <div class="tracker-drop-icon">🎵</div>
-        <div class="tracker-drop-text">பாடலை தேர்வு செய்யவும்</div>
-        <div class="tracker-drop-hint">MP3, WAV, M4A, OGG supported</div>
+        <div class="tracker-drop-text">தட்டவும் — பாடலை தேர்வு செய்யவும்</div>
+        <div class="tracker-drop-hint">MP3, WAV, M4A, AAC, OGG supported</div>
       </div>
 
       <!-- File info -->
@@ -1115,65 +1123,110 @@ document.getElementById('search-clear').addEventListener('click',()=>{
   const searchbox = document.getElementById('searchbox');
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  if(!SpeechRecognition){ voiceBtn.style.display='none'; return; }
+  if(!SpeechRecognition){
+    voiceBtn.style.display='none';
+    return;
+  }
 
   let listening = false;
-  let recog = null;
 
-  function makeRecog(lang){
+  function showVoiceToast(msg, dur=2500){
+    let t = document.getElementById('voice-toast');
+    if(!t){
+      t = document.createElement('div');
+      t.id = 'voice-toast';
+      t.style.cssText = `
+        position:fixed;top:calc(env(safe-area-inset-top,0px) + 70px);
+        left:50%;transform:translateX(-50%);
+        background:rgba(30,27,75,.95);color:#fff;
+        font-size:13px;padding:8px 18px;border-radius:20px;
+        z-index:500;white-space:nowrap;pointer-events:none;
+        box-shadow:0 4px 16px rgba(0,0,0,.3);
+        transition:opacity .3s;
+      `;
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(t._t);
+    t._t = setTimeout(()=>{ t.style.opacity='0'; }, dur);
+  }
+
+  function startVoice(){
+    if(listening) return;
+
     const r = new SpeechRecognition();
-    r.continuous      = false;
-    r.interimResults  = true;
-    r.maxAlternatives = 3;
-    r.lang = lang;
+    r.continuous     = false;
+    r.interimResults = true;
+    r.maxAlternatives= 3;
+    r.lang = 'ta-IN';   // Tamil; onerror falls back automatically
 
     r.onstart = ()=>{
       listening = true;
       voiceBtn.classList.add('listening');
       searchbox.placeholder = '🎤 கேட்கிறேன்...';
+      showVoiceToast('🎤 தமிழில் பாடல் பெயர் சொல்லுங்கள்…', 8000);
     };
+
     r.onresult = (e)=>{
-      // Pick the best transcript from any alternative
       let best = '';
-      for(let i=0;i<e.results.length;i++){
-        for(let j=0;j<e.results[i].length;j++){
+      for(let i=0;i<e.results.length;i++)
+        for(let j=0;j<e.results[i].length;j++)
           if(e.results[i][j].transcript.length > best.length)
             best = e.results[i][j].transcript;
-        }
-      }
       searchbox.value = best;
       applyFilters();
       document.getElementById('search-clear').style.display = best ? 'block' : 'none';
     };
+
     r.onerror = (e)=>{
       listening = false;
       voiceBtn.classList.remove('listening');
       searchbox.placeholder = 'பாடல் எண் அல்லது பெயர் தேடுங்கள்...';
-      if(e.error==='not-allowed'){
-        alert('Microphone permission denied. Please allow microphone access.');
-      } else if(e.error==='language-not-supported' && lang!==''){
-        // Fallback to device default language
-        recog = makeRecog('');
-        try{ recog.start(); } catch(err){}
+      if(e.error === 'not-allowed'){
+        showVoiceToast('⚠ Microphone blocked — Settings → allow mic', 4000);
+      } else if(e.error === 'language-not-supported'){
+        // Tamil pack not installed — retry with device default language
+        showVoiceToast('Tamil voice not available — using device language', 2500);
+        setTimeout(()=>{
+          const r2 = new SpeechRecognition();
+          r2.continuous=false; r2.interimResults=true; r2.maxAlternatives=3;
+          r2.onstart  = r.onstart;
+          r2.onresult = r.onresult;
+          r2.onend    = r.onend;
+          r2.onerror  = (e2)=>{
+            listening=false; voiceBtn.classList.remove('listening');
+            searchbox.placeholder='பாடல் எண் அல்லது பெயர் தேடுங்கள்...';
+            showVoiceToast('⚠ Voice search failed: '+e2.error, 3000);
+          };
+          try{ r2.start(); } catch(err){}
+        }, 300);
+      } else if(e.error === 'no-speech'){
+        showVoiceToast('No speech detected — try again', 2000);
+      } else if(e.error === 'network'){
+        showVoiceToast('⚠ Internet needed for voice search', 3000);
       }
-      // no-speech / aborted → silently reset
     };
+
     r.onend = ()=>{
       listening = false;
       voiceBtn.classList.remove('listening');
       searchbox.placeholder = 'பாடல் எண் அல்லது பெயர் தேடுங்கள்...';
     };
-    return r;
+
+    try{ r.start(); }
+    catch(e){ showVoiceToast('⚠ Could not start voice: '+e.message, 3000); }
   }
 
-  // Try Tamil first; onerror falls back to device default
-  recog = makeRecog('ta-IN');
-
   voiceBtn.addEventListener('click', ()=>{
-    if(listening){ recog.stop(); return; }
-    // Recreate recognizer each time — reusing an ended instance throws InvalidStateError
-    recog = makeRecog('ta-IN');
-    try{ recog.start(); } catch(e){}
+    if(listening){
+      // Can't call stop on a fresh instance — just reset state
+      listening = false;
+      voiceBtn.classList.remove('listening');
+      searchbox.placeholder = 'பாடல் எண் அல்லது பெயர் தேடுங்கள்...';
+      return;
+    }
+    startVoice();
   });
 })();
 
@@ -1997,25 +2050,55 @@ function openTracker(){
     osc2.start(now); osc2.stop(now+dur);
   }
 
-  // Chord library
-  const CHORDS = {
-    'C':  {n:['C4','E4','G4'],        l:'C Major'},
-    'Dm': {n:['D4','F4','A4'],        l:'D Minor'},
-    'Em': {n:['E4','G4','B4'],        l:'E Minor'},
-    'F':  {n:['F4','A4','C5'],        l:'F Major'},
-    'G':  {n:['G4','B4','D5'],        l:'G Major'},
-    'Am': {n:['A4','C5','E5'],        l:'A Minor'},
-    'G7': {n:['G4','B4','D5','F5'],   l:'G Dominant 7'},
-    'C7': {n:['C4','E4','G4','A#4'],  l:'C Dominant 7'},
-    'D':  {n:['D4','F#4','A4'],       l:'D Major'},
-    'A':  {n:['A4','C#5','E5'],       l:'A Major'},
-    'E':  {n:['E4','G#4','B4'],       l:'E Major'},
-    'Bm': {n:['B4','D5','F#5'],       l:'B Minor'},
-    'Am7':{n:['A4','C5','E5','G5'],   l:'A Minor 7'},
-    'D7': {n:['D4','F#4','A4','C5'],  l:'D Dominant 7'},
-    'Bb': {n:['A#4','D5','F5'],       l:'B♭ Major'},
-    'F#m':{n:['F#4','A4','C#5'],      l:'F# Minor'},
-  };
+  // Chord library — all 12 major, 12 minor, common 7ths
+  const CHORD_SECTIONS = [
+    {title:'Major Chords', chords:[
+      {k:'C',   n:['C4','E4','G4'],         l:'C Major'},
+      {k:'Db',  n:['C#4','F4','G#4'],        l:'D♭ Major'},
+      {k:'D',   n:['D4','F#4','A4'],         l:'D Major'},
+      {k:'Eb',  n:['D#4','G4','A#4'],        l:'E♭ Major'},
+      {k:'E',   n:['E4','G#4','B4'],         l:'E Major'},
+      {k:'F',   n:['F4','A4','C5'],          l:'F Major'},
+      {k:'F#',  n:['F#4','A#4','C#5'],       l:'F# Major'},
+      {k:'G',   n:['G4','B4','D5'],          l:'G Major'},
+      {k:'Ab',  n:['G#4','C5','D#5'],        l:'A♭ Major'},
+      {k:'A',   n:['A4','C#5','E5'],         l:'A Major'},
+      {k:'Bb',  n:['A#4','D5','F5'],         l:'B♭ Major'},
+      {k:'B',   n:['B4','D#5','F#5'],        l:'B Major'},
+    ]},
+    {title:'Minor Chords', chords:[
+      {k:'Cm',  n:['C4','D#4','G4'],         l:'C Minor'},
+      {k:'C#m', n:['C#4','E4','G#4'],        l:'C# Minor'},
+      {k:'Dm',  n:['D4','F4','A4'],          l:'D Minor'},
+      {k:'D#m', n:['D#4','F#4','A#4'],       l:'D# Minor'},
+      {k:'Em',  n:['E4','G4','B4'],          l:'E Minor'},
+      {k:'Fm',  n:['F4','G#4','C5'],         l:'F Minor'},
+      {k:'F#m', n:['F#4','A4','C#5'],        l:'F# Minor'},
+      {k:'Gm',  n:['G4','A#4','D5'],         l:'G Minor'},
+      {k:'G#m', n:['G#4','B4','D#5'],        l:'G# Minor'},
+      {k:'Am',  n:['A4','C5','E5'],          l:'A Minor'},
+      {k:'A#m', n:['A#4','C#5','F5'],        l:'A# Minor'},
+      {k:'Bm',  n:['B4','D5','F#5'],         l:'B Minor'},
+    ]},
+    {title:'Dominant 7th Chords', chords:[
+      {k:'C7',  n:['C4','E4','G4','A#4'],    l:'C7'},
+      {k:'D7',  n:['D4','F#4','A4','C5'],    l:'D7'},
+      {k:'E7',  n:['E4','G#4','B4','D5'],    l:'E7'},
+      {k:'F7',  n:['F4','A4','C5','D#5'],    l:'F7'},
+      {k:'G7',  n:['G4','B4','D5','F5'],     l:'G7'},
+      {k:'A7',  n:['A4','C#5','E5','G5'],    l:'A7'},
+      {k:'B7',  n:['B4','D#5','F#5','A5'],   l:'B7'},
+    ]},
+    {title:'Minor 7th Chords', chords:[
+      {k:'Am7', n:['A4','C5','E5','G5'],     l:'Am7'},
+      {k:'Dm7', n:['D4','F4','A4','C5'],     l:'Dm7'},
+      {k:'Em7', n:['E4','G4','B4','D5'],     l:'Em7'},
+      {k:'Bm7', n:['B4','D5','F#5','A5'],    l:'Bm7'},
+    ]},
+  ];
+  // Flat lookup by key name
+  const CHORDS = {};
+  CHORD_SECTIONS.forEach(s=>s.chords.forEach(c=>{ CHORDS[c.k]=c; }));
 
   function parseNO(s){ const m=s.match(/^([A-G][#]?)(\d)$/); return m?{note:m[1],oct:+m[2]}:null; }
 
@@ -2048,8 +2131,7 @@ function openTracker(){
       el.dataset.note=note; el.dataset.oct=oct;
       // Label: C keys show octave number, black keys show ♯
       el.textContent = note==='C' ? 'C'+oct : (isBlack ? note.replace('#','♯') : note);
-      el.addEventListener('pointerdown',e=>{
-        e.preventDefault();
+      el.addEventListener('click',()=>{
         playMidi(toMidi(note,oct));
         setNoteLabel(note+oct+' — '+(SOLFEGE[note]||''));
         el.classList.add('pressed');
@@ -2059,15 +2141,18 @@ function openTracker(){
     });
   }
 
-  // Build chord grid
+  // Build chord grid with sections
   function buildChordGrid(){
     const grid=document.getElementById('piano-chord-grid');
     if(!grid) return;
-    grid.innerHTML=Object.entries(CHORDS).map(([k,c])=>`
-      <div class="pcbtn" data-chord="${k}" onclick="selectPianoChord('${k}')">
-        <div class="pcbtn-name">${k}</div>
-        <div class="pcbtn-sub">${c.l}</div>
-      </div>`).join('');
+    grid.innerHTML=CHORD_SECTIONS.map(sec=>`
+      <div style="grid-column:1/-1;font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.7px;text-transform:uppercase;margin-top:6px;padding-bottom:2px;border-bottom:1px solid var(--border)">${sec.title}</div>
+      ${sec.chords.map(c=>`
+        <div class="pcbtn" data-chord="${c.k}" onclick="selectPianoChord('${c.k}')">
+          <div class="pcbtn-name">${c.k}</div>
+          <div class="pcbtn-sub">${c.l.replace(' Major','Maj').replace(' Minor','Min').replace('Dominant ','')}</div>
+        </div>`).join('')}
+    `).join('');
   }
 
   window.selectPianoChord=function(chord){
