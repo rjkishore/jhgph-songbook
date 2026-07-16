@@ -1538,10 +1538,31 @@ window.addEventListener('popstate',e=>{
 })();
 
 // ── Theme ──
+const THEME_VARS = {
+  dark:{
+    '--bg':'#0a0918','--surface':'#13112b','--surface2':'#1c1940',
+    '--border':'#2a2660','--text':'#f0eeff','--text2':'#9b96cc',
+    '--accent':'#818cf8','--chord':'#fb923c','--key-bg':'#0d2e1f',
+    '--key-text':'#34d399','--fav':'#fbbf24',
+  },
+  light:{
+    '--bg':'#f5f3ff','--surface':'#ffffff','--surface2':'#ede9fe',
+    '--border':'#c4b5fd','--text':'#1e1b4b','--text2':'#6d5ac4',
+    '--accent':'#4f46e5','--chord':'#ea580c','--key-bg':'#d1fae5',
+    '--key-text':'#059669','--fav':'#d97706',
+  }
+};
 function applyTheme(t){
-  document.documentElement.setAttribute('data-theme',t);
-  document.getElementById('theme-btn').textContent=t==='light'?'☀️':'🌙';
-  localStorage.setItem('njp-theme',t);
+  const root = document.documentElement;
+  root.setAttribute('data-theme', t);
+  // Set CSS vars directly — forces immediate repaint on all mobile browsers
+  const vars = THEME_VARS[t] || THEME_VARS.dark;
+  Object.entries(vars).forEach(([k,v]) => root.style.setProperty(k, v));
+  document.getElementById('theme-btn').textContent = t==='light' ? '☀️' : '🌙';
+  localStorage.setItem('njp-theme', t);
+  // Update status bar colour
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.content = t==='light' ? '#7c3aed' : '#1a1a2e';
 }
 document.getElementById('theme-btn').addEventListener('click',()=>{
   applyTheme((document.documentElement.getAttribute('data-theme')||'dark')==='dark'?'light':'dark');
