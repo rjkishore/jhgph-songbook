@@ -204,7 +204,8 @@ body{
 .action-btn.chord-on{background:var(--chord);border-color:var(--chord);color:#fff}
 
 /* Transpose row */
-.transpose-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.transpose-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.capo-hint{font-size:12px;color:var(--text2);margin-bottom:12px;min-height:16px}
 .tr-label{font-size:12px;color:var(--text2)}
 .tr-btn{
   width:36px;height:36px;border-radius:10px;font-size:18px;
@@ -654,11 +655,16 @@ function applyFontSize(){document.documentElement.style.setProperty('--lyric-siz
           // Build lookup
           const extraChords = JSON.parse(localStorage.getItem('njp-extra-chords')||'{}');
           songs.forEach(s=>{
-            // Merge locally saved chords into the song
             if(extraChords[s.id] && !s.chords){
               s.chord_lyrics = extraChords[s.id].chord_lyrics;
               s.chords       = extraChords[s.id].chords;
             }
+            // Extract first lyric line for search
+            const lyricSrc = s.chord_lyrics || s.lyrics || '';
+            s._first = lyricSrc.split(/<BR>|<slide>/i)[0].trim();
+            // Also store into INDEX entry for fast search
+            const idxEntry = INDEX.find(x=>x.i===s.id);
+            if(idxEntry) idxEntry.fl = s._first;
             DETAIL[s.id]=s;
           });
           // If a song is open and was waiting for lyrics, refresh it
@@ -688,7 +694,8 @@ function applyFilters(){
     const n=String(s.n||'');
     return n===q||n.startsWith(q)||
       (s.t||'').toLowerCase().includes(q)||
-      (s.e||'').toLowerCase().includes(q);
+      (s.e||'').toLowerCase().includes(q)||
+      (s.fl||'').toLowerCase().includes(q);
   });
   filtered = list;
   renderList(list);
@@ -844,6 +851,7 @@ function renderDetail(song){
       <button class="nav-btn" onclick="setlistNav(1)" ${si===setlist.length-1?'disabled':''}>Next ›</button>
     </div>`:'';
 
+  const detectedKey = hasChords ? detectSongKey(song.chords) : '';
   const transposeHtml = hasChords ? `
     <div class="transpose-row">
       <button class="action-btn ${showChords?'chord-on':''}" id="chords-vis-btn" onclick="toggleChordsVis()">🎸 ${showChords?'ON':'OFF'}</button>
@@ -852,7 +860,9 @@ function renderDetail(song){
       <div id="transpose-value">0</div>
       <button class="tr-btn" onclick="changeTranspose(+1)">+</button>
       <button class="tr-btn" onclick="changeTranspose(0,'reset')" style="font-size:13px">↺</button>
-    </div>` : '';
+      <span id="key-display" class="chip key" style="margin-left:4px">${detectedKey||song.key||'?'}</span>
+    </div>
+    <div id="capo-suggestion" class="capo-hint"></div>` : '';
 
   const shareHtml = 'share' in navigator ? `<button class="action-btn" id="share-btn" onclick="shareSong()">↗ Share</button>` : '';
 
@@ -946,9 +956,62 @@ function renderLyrics(){
   if(tv)tv.textContent=currentTranspose>=0?'+'+currentTranspose:''+currentTranspose;
 }
 
+// Capo positions that give guitar-friendly keys from a target key
+const CAPO_TABLE = {
+  'C':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'F':5,
+  'F#':6,'Gb':6,'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11
+};
+const GUITAR_FRIENDLY = ['C','D','E','G','A','Am','Em','Dm'];
+
+function detectSongKey(chordsStr){
+  if(!chordsStr) return '';
+  // Collect all chord roots from the chords string
+  const matches = chordsStr.match(/[A-G][b#]?/g) || [];
+  const freq = {};
+  matches.forEach(n=>{ freq[n]=(freq[n]||0)+1; });
+  // Return the most frequent chord root as the key
+  return Object.entries(freq).sort((a,b)=>b[1]-a[1])[0]?.[0] || '';
+}
+
+function getCapoSuggestion(originalKey, semitones){
+  if(!originalKey || !semitones) return '';
+  const rootIdx = CHROMATIC.indexOf(ENHARMONIC[originalKey]||originalKey);
+  if(rootIdx < 0) return '';
+  const targetIdx = ((rootIdx + semitones) % 12 + 12) % 12;
+  const targetKey = CHROMATIC[targetIdx];
+  // Capo = semitones from a guitar-friendly key to targetKey
+  // Find which guitar-friendly key + capo fret reaches targetKey
+  const suggestions = [];
+  for(const gk of ['C','D','E','G','A']){
+    const gkIdx = CHROMATIC.indexOf(gk);
+    const capo = ((targetIdx - gkIdx) % 12 + 12) % 12;
+    if(capo <= 7) suggestions.push({key:gk, capo});
+  }
+  if(!suggestions.length) return `Key: ${targetKey}`;
+  const best = suggestions.sort((a,b)=>a.capo-b.capo)[0];
+  if(best.capo===0) return `Key: ${targetKey} (open chords)`;
+  return `Key: ${targetKey} — Capo ${best.capo} → play as ${best.key}`;
+}
+
 function changeTranspose(d,mode){
-  if(mode==='reset')currentTranspose=0;else currentTranspose+=d;
+  if(mode==='reset') currentTranspose=0; else currentTranspose+=d;
   renderLyrics();
+  // Update key display and capo suggestion
+  const tv = document.getElementById('transpose-value');
+  if(tv) tv.textContent = currentTranspose>=0?'+'+currentTranspose:''+currentTranspose;
+  const kd = document.getElementById('key-display');
+  const cs = document.getElementById('capo-suggestion');
+  if(kd && activeSong){
+    const origKey = detectSongKey(activeSong.chords) || activeSong.key || '';
+    if(origKey){
+      const rootIdx = CHROMATIC.indexOf(ENHARMONIC[origKey]||origKey);
+      const newKey = rootIdx>=0 ? CHROMATIC[((rootIdx+currentTranspose)%12+12)%12] : origKey;
+      kd.textContent = newKey;
+    }
+    if(cs) cs.textContent = currentTranspose!==0
+      ? getCapoSuggestion(detectSongKey(activeSong.chords)||activeSong.key||'', currentTranspose)
+      : '';
+  }
 }
 function toggleChordsVis(){
   showChords=!showChords;
