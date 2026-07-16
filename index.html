@@ -444,6 +444,116 @@ body{
 
 /* scrollbars */
 ::-webkit-scrollbar{width:4px}
+
+/* ── Piano Tutorial ── */
+#piano-view{
+  position:absolute;inset:0;background:var(--bg);
+  overflow-y:auto;overscroll-behavior:contain;
+  transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  padding:18px 16px calc(var(--nav-h) + var(--safe-b) + 20px);
+}
+#piano-view.show{transform:translateX(0)}
+.piano-hdr{font-size:18px;font-weight:700;margin-bottom:2px}
+.piano-sub{font-size:12px;color:var(--text2);margin-bottom:16px}
+.piano-wrap{overflow-x:auto;padding:8px 0 12px;-webkit-overflow-scrolling:touch}
+.piano-keys{position:relative;height:138px;width:616px;flex-shrink:0;display:block}
+.piano-wkey{
+  position:absolute;top:0;width:44px;height:120px;
+  background:#f5f3ff;border:1.5px solid #aaa;
+  border-radius:0 0 8px 8px;cursor:pointer;
+  display:flex;align-items:flex-end;justify-content:center;
+  padding-bottom:7px;font-size:10px;font-weight:700;color:#555;
+  z-index:1;transition:background .08s;-webkit-tap-highlight-color:transparent;
+}
+:root[data-theme="light"] .piano-wkey{background:#fff}
+.piano-wkey:active,.piano-wkey.pressed{background:#ddd6fe}
+.piano-wkey.lit{background:linear-gradient(180deg,#818cf8,#6366f1) !important;color:#fff;border-color:#4f46e5;box-shadow:0 0 14px rgba(99,102,241,.5)}
+.piano-bkey{
+  position:absolute;top:0;width:28px;height:76px;
+  background:linear-gradient(180deg,#1e1b4b,#12102a);
+  border:1.5px solid #111;border-top:none;
+  border-radius:0 0 5px 5px;cursor:pointer;z-index:2;
+  display:flex;align-items:flex-end;justify-content:center;
+  padding-bottom:4px;font-size:9px;color:#7c7aaa;
+  transition:background .08s;-webkit-tap-highlight-color:transparent;
+}
+.piano-bkey:active,.piano-bkey.pressed{background:linear-gradient(180deg,#4c1d95,#6d28d9)}
+.piano-bkey.lit{background:linear-gradient(180deg,#fb923c,#f43f5e) !important;color:#fff;box-shadow:0 0 10px rgba(251,146,60,.5)}
+.piano-note-label{
+  text-align:center;font-size:13px;color:var(--accent);font-weight:600;
+  min-height:20px;margin-top:4px;margin-bottom:12px;
+}
+.piano-section-title{
+  font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.8px;
+  text-transform:uppercase;margin:14px 0 8px;
+}
+.piano-chord-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:7px;margin-bottom:10px}
+.pcbtn{
+  padding:8px 4px;border-radius:10px;text-align:center;
+  background:var(--surface);border:1.5px solid var(--border);
+  cursor:pointer;font-family:inherit;transition:all .15s;-webkit-tap-highlight-color:transparent;
+}
+.pcbtn:active{opacity:.7;transform:scale(.93)}
+.pcbtn.sel{background:var(--grad);border-color:transparent;box-shadow:0 2px 10px rgba(124,58,237,.4)}
+.pcbtn-name{font-size:15px;font-weight:700;color:var(--text)}
+.pcbtn.sel .pcbtn-name,.pcbtn.sel .pcbtn-sub{color:#fff}
+.pcbtn-sub{font-size:9px;color:var(--text2);margin-top:2px}
+.piano-play-btn{
+  width:100%;padding:12px;border-radius:var(--radius);
+  background:var(--grad);color:#fff;border:none;
+  font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;
+  margin-bottom:4px;box-shadow:0 4px 16px rgba(124,58,237,.35);
+  transition:all .2s;-webkit-tap-highlight-color:transparent;
+}
+.piano-play-btn:active:not(:disabled){opacity:.85;transform:scale(.98)}
+.piano-play-btn:disabled{opacity:.35;cursor:default;box-shadow:none}
+.plesso-tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.plesso-tab{
+  padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text2);
+  font-family:inherit;transition:all .2s;font-weight:500;
+}
+.plesso-tab.on{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 2px 8px rgba(124,58,237,.3)}
+.plesso-pane{display:none}
+.plesso-pane.on{display:block}
+.piano-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px;margin-bottom:10px;
+  position:relative;overflow:hidden;
+}
+.piano-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--grad)}
+.piano-card h4{font-size:14px;font-weight:700;margin-bottom:6px;color:var(--text)}
+.piano-card p{font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:5px}
+.piano-card p:last-child{margin-bottom:0}
+.note-pills{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.note-pill{
+  padding:6px 10px;border-radius:8px;font-size:13px;font-weight:700;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;
+}
+.note-pill.blk{background:#1e1b4b;color:#9b96cc;border-color:#2a2660}
+.note-pill:active{background:var(--accent);color:#fff;transform:scale(.93)}
+.scale-pills{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.scale-pill{
+  padding:6px 8px;min-width:36px;text-align:center;
+  border-radius:8px;font-size:12px;font-weight:700;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;
+}
+.scale-pill.rt{background:var(--grad);color:#fff;border-color:transparent}
+.scale-pill.blk{background:#1e1b4b;color:#9b96cc;border-color:#2a2660}
+.scale-pill:active{opacity:.7;transform:scale(.92)}
+.prog-row{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:10px;padding:10px 12px;margin-bottom:7px;
+  display:flex;align-items:flex-start;gap:10px;
+}
+.prog-num{
+  width:26px;height:26px;border-radius:8px;flex-shrink:0;
+  background:var(--grad);color:#fff;font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;margin-top:1px;
+}
+.prog-text{font-size:13px;color:var(--text);line-height:1.5}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
@@ -656,6 +766,189 @@ body{
         <div id="tracker-chord-list"></div>
       </div>
     </div>
+
+    <!-- Piano Tutorial view -->
+    <div id="piano-view">
+      <div class="piano-hdr">🎹 Piano Tutorial</div>
+      <div class="piano-sub">கீபோர்ட் வாசிக்க கற்றுக்கொள்ளுங்கள் — Learn to play keyboard</div>
+
+      <div class="piano-wrap"><div class="piano-keys" id="piano-keys"></div></div>
+      <div class="piano-note-label" id="piano-note-label">↑ Tap a key to hear it play</div>
+
+      <div class="piano-section-title">🎸 Chord Practice — tap to highlight keys</div>
+      <div class="piano-chord-grid" id="piano-chord-grid"></div>
+      <button class="piano-play-btn" id="piano-play-chord-btn" disabled>▶ Select a chord above</button>
+
+      <div class="piano-section-title">📚 Lessons</div>
+      <div class="plesso-tabs">
+        <button class="plesso-tab on" data-lesson="notes" onclick="showPianoLesson('notes')">Notes</button>
+        <button class="plesso-tab" data-lesson="chords" onclick="showPianoLesson('chords')">Chords</button>
+        <button class="plesso-tab" data-lesson="scales" onclick="showPianoLesson('scales')">Scales</button>
+        <button class="plesso-tab" data-lesson="tips" onclick="showPianoLesson('tips')">Tips</button>
+      </div>
+
+      <!-- Notes lesson -->
+      <div id="piano-lesson-notes" class="plesso-pane on">
+        <div class="piano-card">
+          <h4>🎵 The 7 Basic Notes</h4>
+          <p>The musical alphabet has just 7 notes: <strong>C D E F G A B</strong> — then it repeats.</p>
+          <p>On a keyboard these are the <strong>white keys</strong>. Tap each to hear it:</p>
+          <div class="note-pills">
+            <div class="note-pill" onclick="pianoPlayName('C',4)">C — Do</div>
+            <div class="note-pill" onclick="pianoPlayName('D',4)">D — Re</div>
+            <div class="note-pill" onclick="pianoPlayName('E',4)">E — Mi</div>
+            <div class="note-pill" onclick="pianoPlayName('F',4)">F — Fa</div>
+            <div class="note-pill" onclick="pianoPlayName('G',4)">G — Sol</div>
+            <div class="note-pill" onclick="pianoPlayName('A',4)">A — La</div>
+            <div class="note-pill" onclick="pianoPlayName('B',4)">B — Ti</div>
+          </div>
+        </div>
+        <div class="piano-card">
+          <h4>⬛ Black Keys — Sharps &amp; Flats</h4>
+          <p>Black keys sit <strong>between</strong> white keys. Each has two names: a sharp (♯) and a flat (♭).</p>
+          <div class="note-pills">
+            <div class="note-pill blk" onclick="pianoPlayName('C#',4)">C♯ / D♭</div>
+            <div class="note-pill blk" onclick="pianoPlayName('D#',4)">D♯ / E♭</div>
+            <div class="note-pill blk" onclick="pianoPlayName('F#',4)">F♯ / G♭</div>
+            <div class="note-pill blk" onclick="pianoPlayName('G#',4)">G♯ / A♭</div>
+            <div class="note-pill blk" onclick="pianoPlayName('A#',4)">A♯ / B♭</div>
+          </div>
+        </div>
+        <div class="piano-card">
+          <h4>💡 How to find C on any keyboard</h4>
+          <p>Look for a group of <strong>2 black keys</strong>. The white key just to their <strong>LEFT</strong> is always C. From C, just go alphabetically: C D E F G A B C…</p>
+        </div>
+        <div class="piano-card">
+          <h4>🔢 Octaves — why notes repeat</h4>
+          <p>After B comes another C — but it sounds <strong>higher</strong>. This set of 12 notes (7 white + 5 black) is called an <strong>octave</strong>. The piano has about 7 octaves. Most songs live in 2-3 octaves.</p>
+        </div>
+      </div>
+
+      <!-- Chords lesson -->
+      <div id="piano-lesson-chords" class="plesso-pane">
+        <div class="piano-card">
+          <h4>🎹 What is a Chord?</h4>
+          <p>A chord is <strong>3 or more notes played at the same time</strong>. They work together to create a feeling — happy, sad, tense, or peaceful.</p>
+        </div>
+        <div class="piano-card">
+          <h4>⚡ Major vs Minor</h4>
+          <p><strong>Major chords</strong> (C, F, G, D, A, E…) sound <strong>happy and bright</strong>.</p>
+          <p><strong>Minor chords</strong> (Am, Dm, Em, Bm…) sound <strong>emotional or sad</strong>.</p>
+          <p>Tamil Christian songs mix both to create depth and worship feeling.</p>
+        </div>
+        <div class="piano-card">
+          <h4>🌟 The 6 Chords that play MOST songs</h4>
+          <p>These chords are all in the <strong>key of C major</strong>. Learn these 6 and you can play 80% of Tamil Christian songs! Tap each to see the keys:</p>
+          <div class="note-pills">
+            <div class="note-pill" onclick="selectPianoChord('C')">C — Happy</div>
+            <div class="note-pill" onclick="selectPianoChord('Dm')">Dm — Gentle sad</div>
+            <div class="note-pill" onclick="selectPianoChord('Em')">Em — Emotional</div>
+            <div class="note-pill" onclick="selectPianoChord('F')">F — Warm</div>
+            <div class="note-pill" onclick="selectPianoChord('G')">G — Tension/lift</div>
+            <div class="note-pill" onclick="selectPianoChord('Am')">Am — Deep worship</div>
+          </div>
+        </div>
+        <div class="piano-card">
+          <h4>🎶 Most Common Song Progressions</h4>
+          <p><strong>Am → F → C → G</strong> — Very common in worship songs</p>
+          <p><strong>C → Am → F → G</strong> — Happy praise songs</p>
+          <p><strong>G → Em → C → D</strong> — Tamil Christian classics</p>
+          <p style="margin-top:8px;font-size:12px">Practice switching between these 4 chords smoothly — that's the goal!</p>
+        </div>
+      </div>
+
+      <!-- Scales lesson -->
+      <div id="piano-lesson-scales" class="plesso-pane">
+        <div class="piano-card">
+          <h4>🎵 C Major Scale — Start Here!</h4>
+          <p>The easiest scale ever — <strong>all white keys</strong>! Just play: C D E F G A B C</p>
+          <p>Tap each note in order to hear the scale:</p>
+          <div class="scale-pills">
+            <div class="scale-pill rt" onclick="pianoPlayName('C',4)">C</div>
+            <div class="scale-pill" onclick="pianoPlayName('D',4)">D</div>
+            <div class="scale-pill" onclick="pianoPlayName('E',4)">E</div>
+            <div class="scale-pill" onclick="pianoPlayName('F',4)">F</div>
+            <div class="scale-pill" onclick="pianoPlayName('G',4)">G</div>
+            <div class="scale-pill" onclick="pianoPlayName('A',4)">A</div>
+            <div class="scale-pill" onclick="pianoPlayName('B',4)">B</div>
+            <div class="scale-pill rt" onclick="pianoPlayName('C',5)">C</div>
+          </div>
+        </div>
+        <div class="piano-card">
+          <h4>🎵 G Major Scale</h4>
+          <p>G A B C D E F♯ G — only <strong>one black key</strong> (F♯). Very common key for worship!</p>
+          <div class="scale-pills">
+            <div class="scale-pill rt" onclick="pianoPlayName('G',4)">G</div>
+            <div class="scale-pill" onclick="pianoPlayName('A',4)">A</div>
+            <div class="scale-pill" onclick="pianoPlayName('B',4)">B</div>
+            <div class="scale-pill" onclick="pianoPlayName('C',5)">C</div>
+            <div class="scale-pill" onclick="pianoPlayName('D',5)">D</div>
+            <div class="scale-pill" onclick="pianoPlayName('E',5)">E</div>
+            <div class="scale-pill blk" onclick="pianoPlayName('F#',5)">F♯</div>
+            <div class="scale-pill rt" onclick="pianoPlayName('G',5)">G</div>
+          </div>
+        </div>
+        <div class="piano-card">
+          <h4>🎵 A Minor Scale (Sad / Worship feel)</h4>
+          <p>A B C D E F G A — <strong>same keys as C Major</strong> but starting from A. This gives the emotional worship sound!</p>
+          <div class="scale-pills">
+            <div class="scale-pill rt" onclick="pianoPlayName('A',4)">A</div>
+            <div class="scale-pill" onclick="pianoPlayName('B',4)">B</div>
+            <div class="scale-pill" onclick="pianoPlayName('C',5)">C</div>
+            <div class="scale-pill" onclick="pianoPlayName('D',5)">D</div>
+            <div class="scale-pill" onclick="pianoPlayName('E',5)">E</div>
+            <div class="scale-pill" onclick="pianoPlayName('F',5)">F</div>
+            <div class="scale-pill" onclick="pianoPlayName('G',5)">G</div>
+            <div class="scale-pill rt" onclick="pianoPlayName('A',5)">A</div>
+          </div>
+        </div>
+        <div class="piano-card">
+          <h4>🎵 D Major Scale</h4>
+          <p>D E F♯ G A B C♯ D — two black keys. Great key for many Tamil songs!</p>
+          <div class="scale-pills">
+            <div class="scale-pill rt" onclick="pianoPlayName('D',4)">D</div>
+            <div class="scale-pill" onclick="pianoPlayName('E',4)">E</div>
+            <div class="scale-pill blk" onclick="pianoPlayName('F#',4)">F♯</div>
+            <div class="scale-pill" onclick="pianoPlayName('G',4)">G</div>
+            <div class="scale-pill" onclick="pianoPlayName('A',4)">A</div>
+            <div class="scale-pill" onclick="pianoPlayName('B',4)">B</div>
+            <div class="scale-pill blk" onclick="pianoPlayName('C#',5)">C♯</div>
+            <div class="scale-pill rt" onclick="pianoPlayName('D',5)">D</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tips lesson -->
+      <div id="piano-lesson-tips" class="plesso-pane">
+        <div class="piano-card">
+          <h4>📅 4-Week Beginner Plan</h4>
+          <div class="prog-row"><div class="prog-num">1</div><div class="prog-text"><strong>Week 1:</strong> Play C D E F G A B up and down every day. Find all the C notes on the keyboard.</div></div>
+          <div class="prog-row"><div class="prog-num">2</div><div class="prog-text"><strong>Week 2:</strong> Learn C, Am, F, G chords. Practice switching between them slowly without stopping.</div></div>
+          <div class="prog-row"><div class="prog-num">3</div><div class="prog-text"><strong>Week 3:</strong> Play a simple song using C Am F G. Open a song in this app and follow the chord names!</div></div>
+          <div class="prog-row"><div class="prog-num">4</div><div class="prog-text"><strong>Week 4:</strong> Add Dm, Em, G7. Now you can play 95% of Tamil Christian songs!</div></div>
+        </div>
+        <div class="piano-card">
+          <h4>✋ Finger Numbers</h4>
+          <p>Fingers are numbered 1–5 (thumb = 1, pinky = 5).</p>
+          <p><strong>C Major chord (right hand):</strong> Thumb (1) on C · Middle finger (3) on E · Pinky (5) on G</p>
+          <p><strong>Am chord (right hand):</strong> Thumb (1) on A · Middle (3) on C · Pinky (5) on E</p>
+          <p><strong>Left hand:</strong> Just play the root note (single key) — C for C chord, A for Am, G for G, etc.</p>
+        </div>
+        <div class="piano-card">
+          <h4>💡 Tips that actually help</h4>
+          <p>• Sit straight, keep wrists relaxed, curl fingers gently</p>
+          <p>• Practice <strong>slowly</strong> — speed comes later. Accuracy first!</p>
+          <p>• Open a Tamil Christian song in this app → look at the chord names → play those chords in order</p>
+          <p>• The progression <strong>Am → F → C → G</strong> works for dozens of songs — practice just this every day</p>
+          <p>• Use the <strong>Chord Practice</strong> section above to learn where each chord is on the keyboard</p>
+        </div>
+        <div class="piano-card">
+          <h4>🎹 Quick Chord Formula</h4>
+          <p><strong>Major chord:</strong> Root + skip 3 white keys + skip 2 white keys<br><span style="font-size:11px">Example: C major = C, skip D, land on E, skip F, land on G</span></p>
+          <p><strong>Minor chord:</strong> Root + skip 2 white keys + skip 3 white keys<br><span style="font-size:11px">Example: Am = A, skip B, land on C, skip D, land on E</span></p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Bottom nav (mobile only) -->
@@ -673,8 +966,12 @@ body{
       <span class="nav-label">Favourites</span>
     </button>
     <button class="nav-tab" id="tab-tracker" onclick="openTracker()">
-      <span class="nav-icon">🎹</span>
+      <span class="nav-icon">🎵</span>
       <span class="nav-label">Tracker</span>
+    </button>
+    <button class="nav-tab" id="tab-piano" onclick="openPiano()">
+      <span class="nav-icon">🎹</span>
+      <span class="nav-label">Piano</span>
     </button>
     <button class="nav-tab" id="tab-set" onclick="openSetlistSheet()">
       <span class="nav-icon">📋</span>
@@ -891,10 +1188,13 @@ function setActiveTab(tab, runFilters=true){
   document.getElementById('tab-chords').classList.toggle('active', tab==='chords');
   document.getElementById('tab-favs').classList.toggle('active', tab==='favs');
   document.getElementById('tab-tracker').classList.toggle('active', tab==='tracker');
+  document.getElementById('tab-piano').classList.toggle('active', tab==='piano');
   document.getElementById('chords-pill').classList.toggle('active', chordsOnly);
   document.getElementById('fav-pill').classList.toggle('active', favOnly);
-  // Show/hide tracker view
+  // Show/hide tracker / piano views
   document.getElementById('tracker-view').classList.toggle('show', tab==='tracker');
+  document.getElementById('piano-view').classList.toggle('show', tab==='piano');
+  if(tab==='piano' && window._initPiano) window._initPiano();
   if(runFilters) applyFilters();
 }
 
@@ -1378,6 +1678,13 @@ function discardFoundChords(){
 
 function openSetlistSheet(){document.getElementById('setlist-sheet').classList.add('open');renderSetlist()}
 
+// ── Piano Tutorial ──────────────────────────────────────────────────────────
+function openPiano(){
+  document.getElementById('detail-view').classList.remove('show');
+  releaseWakeLock();
+  setActiveTab('piano');
+}
+
 // ── Chord Tracker ──────────────────────────────────────────────────────────
 function openTracker(){
   // Close detail view first so it doesn't overlap tracker
@@ -1649,6 +1956,176 @@ function openTracker(){
     trackerSeek(pct*audioBuffer.duration);
   });
 })();
+(function initPianoTutorial(){
+  // All keys: [noteName, octave, isBlack, leftPx]
+  const KEYS = [
+    ['C',4,false,0],  ['C#',4,true,30],  ['D',4,false,44], ['D#',4,true,74],
+    ['E',4,false,88], ['F',4,false,132],  ['F#',4,true,162],['G',4,false,176],
+    ['G#',4,true,206],['A',4,false,220],  ['A#',4,true,250],['B',4,false,264],
+    ['C',5,false,308],['C#',5,true,338],  ['D',5,false,352],['D#',5,true,382],
+    ['E',5,false,396],['F',5,false,440],  ['F#',5,true,470],['G',5,false,484],
+    ['G#',5,true,514],['A',5,false,528],  ['A#',5,true,558],['B',5,false,572],
+  ];
+
+  const NOTE_SEMI = {C:0,'C#':1,D:2,'D#':3,E:4,F:5,'F#':6,G:7,'G#':8,A:9,'A#':10,B:11,
+                     Db:1,Eb:3,Gb:6,Ab:8,Bb:10};
+  const SOLFEGE   = {C:'Do',D:'Re',E:'Mi',F:'Fa',G:'Sol',A:'La',B:'Ti',
+                     'C#':'Do♯','D#':'Re♯','F#':'Fa♯','G#':'Sol♯','A#':'La♯'};
+
+  function toMidi(note,oct){ return 12*(oct+1)+(NOTE_SEMI[note]||0); }
+  function midiFreq(m){ return 440*Math.pow(2,(m-69)/12); }
+
+  let pCtx=null;
+  function getCtx(){
+    if(!pCtx) pCtx=new(window.AudioContext||window.webkitAudioContext)();
+    if(pCtx.state==='suspended') pCtx.resume();
+    return pCtx;
+  }
+
+  function playMidi(midi,vol=0.45,dur=1.2){
+    const ctx=getCtx(), freq=midiFreq(midi), now=ctx.currentTime;
+    const osc=ctx.createOscillator(), osc2=ctx.createOscillator();
+    const g=ctx.createGain(), g2=ctx.createGain();
+    osc.type='triangle'; osc.frequency.value=freq;
+    osc2.type='sine';    osc2.frequency.value=freq*2;
+    g2.gain.value=0.2;
+    osc2.connect(g2); g2.connect(g); osc.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(0,now);
+    g.gain.linearRampToValueAtTime(vol,now+0.01);
+    g.gain.exponentialRampToValueAtTime(0.001,now+dur);
+    osc.start(now); osc.stop(now+dur);
+    osc2.start(now); osc2.stop(now+dur);
+  }
+
+  // Chord library
+  const CHORDS = {
+    'C':  {n:['C4','E4','G4'],        l:'C Major'},
+    'Dm': {n:['D4','F4','A4'],        l:'D Minor'},
+    'Em': {n:['E4','G4','B4'],        l:'E Minor'},
+    'F':  {n:['F4','A4','C5'],        l:'F Major'},
+    'G':  {n:['G4','B4','D5'],        l:'G Major'},
+    'Am': {n:['A4','C5','E5'],        l:'A Minor'},
+    'G7': {n:['G4','B4','D5','F5'],   l:'G Dominant 7'},
+    'C7': {n:['C4','E4','G4','A#4'],  l:'C Dominant 7'},
+    'D':  {n:['D4','F#4','A4'],       l:'D Major'},
+    'A':  {n:['A4','C#5','E5'],       l:'A Major'},
+    'E':  {n:['E4','G#4','B4'],       l:'E Major'},
+    'Bm': {n:['B4','D5','F#5'],       l:'B Minor'},
+    'Am7':{n:['A4','C5','E5','G5'],   l:'A Minor 7'},
+    'D7': {n:['D4','F#4','A4','C5'],  l:'D Dominant 7'},
+    'Bb': {n:['A#4','D5','F5'],       l:'B♭ Major'},
+    'F#m':{n:['F#4','A4','C#5'],      l:'F# Minor'},
+  };
+
+  function parseNO(s){ const m=s.match(/^([A-G][#]?)(\d)$/); return m?{note:m[1],oct:+m[2]}:null; }
+
+  function litKeys(noteOcts){
+    document.querySelectorAll('#piano-keys .lit').forEach(k=>k.classList.remove('lit'));
+    (noteOcts||[]).forEach(no=>{
+      const p=parseNO(no); if(!p) return;
+      const el=document.querySelector(`#piano-keys [data-note="${p.note}"][data-oct="${p.oct}"]`);
+      if(el) el.classList.add('lit');
+    });
+  }
+
+  function setNoteLabel(text){
+    const lbl=document.getElementById('piano-note-label');
+    if(!lbl) return;
+    lbl.textContent=text;
+    clearTimeout(lbl._t);
+    lbl._t=setTimeout(()=>{ lbl.textContent='↑ Tap a key to hear it play'; },2500);
+  }
+
+  // Build piano HTML
+  function buildPiano(){
+    const wrap=document.getElementById('piano-keys');
+    if(!wrap) return;
+    wrap.innerHTML='';
+    KEYS.forEach(([note,oct,isBlack,left])=>{
+      const el=document.createElement('div');
+      el.className=isBlack?'piano-bkey':'piano-wkey';
+      el.style.left=left+'px';
+      el.dataset.note=note; el.dataset.oct=oct;
+      // Label: C keys show octave number, black keys show ♯
+      el.textContent = note==='C' ? 'C'+oct : (isBlack ? note.replace('#','♯') : note);
+      el.addEventListener('pointerdown',e=>{
+        e.preventDefault();
+        playMidi(toMidi(note,oct));
+        setNoteLabel(note+oct+' — '+(SOLFEGE[note]||''));
+        el.classList.add('pressed');
+        setTimeout(()=>el.classList.remove('pressed'),180);
+      });
+      wrap.appendChild(el);
+    });
+  }
+
+  // Build chord grid
+  function buildChordGrid(){
+    const grid=document.getElementById('piano-chord-grid');
+    if(!grid) return;
+    grid.innerHTML=Object.entries(CHORDS).map(([k,c])=>`
+      <div class="pcbtn" data-chord="${k}" onclick="selectPianoChord('${k}')">
+        <div class="pcbtn-name">${k}</div>
+        <div class="pcbtn-sub">${c.l}</div>
+      </div>`).join('');
+  }
+
+  window.selectPianoChord=function(chord){
+    const info=CHORDS[chord]; if(!info) return;
+    document.querySelectorAll('.pcbtn').forEach(b=>b.classList.toggle('sel',b.dataset.chord===chord));
+    litKeys(info.n);
+    setNoteLabel('🎵 '+info.l+': '+info.n.join(' · '));
+    const playBtn=document.getElementById('piano-play-chord-btn');
+    if(playBtn){ playBtn.disabled=false; playBtn.textContent='▶ Play '+chord+' ('+info.l+')'; }
+    // Scroll the first highlighted key into view
+    const first=parseNO(info.n[0]);
+    if(first){
+      const el=document.querySelector(`#piano-keys [data-note="${first.note}"][data-oct="${first.oct}"]`);
+      if(el) el.scrollIntoView({inline:'center',behavior:'smooth'});
+    }
+  };
+
+  function playChord(chord){
+    const info=CHORDS[chord]; if(!info) return;
+    info.n.forEach((no,i)=>{
+      const p=parseNO(no); if(!p) return;
+      setTimeout(()=>playMidi(toMidi(p.note,p.oct),0.35,1.6), i*40);
+    });
+  }
+
+  // pianoPlayName — called from lesson pills
+  window.pianoPlayName=function(note,oct){
+    playMidi(toMidi(note,oct));
+    setNoteLabel(note+oct+' — '+(SOLFEGE[note]||''));
+    litKeys([note+oct]);
+    setTimeout(()=>litKeys([]),600);
+  };
+
+  window.showPianoLesson=function(id){
+    document.querySelectorAll('.plesso-pane').forEach(p=>p.classList.remove('on'));
+    document.querySelectorAll('.plesso-tab').forEach(t=>t.classList.remove('on'));
+    const pane=document.getElementById('piano-lesson-'+id);
+    const tab=document.querySelector(`.plesso-tab[data-lesson="${id}"]`);
+    if(pane) pane.classList.add('on');
+    if(tab)  tab.classList.add('on');
+  };
+
+  // Play chord button
+  const playBtn=document.getElementById('piano-play-chord-btn');
+  if(playBtn) playBtn.addEventListener('click',()=>{
+    const sel=document.querySelector('.pcbtn.sel');
+    if(sel) playChord(sel.dataset.chord);
+  });
+
+  // Lazy init — build keys only when Piano tab is first opened
+  let ready=false;
+  window._initPiano=function(){
+    if(ready) return; ready=true;
+    buildPiano();
+    buildChordGrid();
+  };
+})();
+
 function closeSetlistSheet(){document.getElementById('setlist-sheet').classList.remove('open')}
 function clearSetlist(){if(confirm('Set list அழிக்கவா?')){setlist=[];saveSetlist();renderSetlist();if(activeSong)renderDetail(activeSong)}}
 function renderSetlist(){
