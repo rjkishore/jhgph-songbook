@@ -2,511 +2,814 @@
 <html lang="ta">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>JHGPH Songbook</title>
 <link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#0f0f0f">
+<meta name="theme-color" content="#1a1a2e">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JHGPH Songs">
 <style>
-  /* ── Bundled Tamil font (offline) ── */
-  @font-face {
-    font-family: 'Noto Sans Tamil';
-    font-style: normal; font-weight: 400; font-display: swap;
-    src: url('./fonts/notosanstamil-tamil.woff2') format('woff2');
-    unicode-range: U+0964-0965, U+0B82-0BFA, U+200C-200D, U+20B9, U+25CC;
-  }
-  @font-face {
-    font-family: 'Noto Sans Tamil';
-    font-style: normal; font-weight: 700; font-display: swap;
-    src: url('./fonts/notosanstamil-tamil.woff2') format('woff2');
-    unicode-range: U+0964-0965, U+0B82-0BFA, U+200C-200D, U+20B9, U+25CC;
-  }
-  @font-face {
-    font-family: 'Noto Sans Tamil';
-    font-style: normal; font-weight: 400; font-display: swap;
-    src: url('./fonts/notosanstamil-latin.woff2') format('woff2');
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+2191, U+2193, U+2212;
-  }
-  @font-face {
-    font-family: 'Noto Sans Tamil';
-    font-style: normal; font-weight: 700; font-display: swap;
-    src: url('./fonts/notosanstamil-latin.woff2') format('woff2');
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+2191, U+2193, U+2212;
-  }
+@font-face {
+  font-family:'Noto Sans Tamil';font-style:normal;font-weight:400;font-display:swap;
+  src:url('./fonts/notosanstamil-tamil.woff2') format('woff2');
+  unicode-range:U+0964-0965,U+0B82-0BFA,U+200C-200D,U+20B9,U+25CC;
+}
+@font-face {
+  font-family:'Noto Sans Tamil';font-style:normal;font-weight:700;font-display:swap;
+  src:url('./fonts/notosanstamil-tamil.woff2') format('woff2');
+  unicode-range:U+0964-0965,U+0B82-0BFA,U+200C-200D,U+20B9,U+25CC;
+}
+@font-face {
+  font-family:'Noto Sans Tamil';font-style:normal;font-weight:400;font-display:swap;
+  src:url('./fonts/notosanstamil-latin.woff2') format('woff2');
+  unicode-range:U+0000-00FF;
+}
+:root {
+  --bg:#0d0d16; --surface:#161625; --surface2:#1f1f35; --border:#2e2e50;
+  --text:#eeeef5; --text2:#8888aa; --accent:#6c8fff; --chord:#ff5c5c;
+  --key-bg:#1a2e1a; --key-text:#4caf50; --fav:#ffb400; --nav-h:60px;
+  --hdr-h:56px; --lyric-size:17px; --radius:14px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-l:env(safe-area-inset-left,0px);
+  --safe-r:env(safe-area-inset-right,0px);
+}
+:root[data-theme="light"] {
+  --bg:#f0f0f8; --surface:#ffffff; --surface2:#e8e8f4; --border:#d0d0e8;
+  --text:#1a1a2e; --text2:#6666aa; --accent:#3355dd; --chord:#cc2222;
+  --key-bg:#e3f5e3; --key-text:#2e7d32; --fav:#e69a00;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{
+  font-family:'Noto Sans Tamil','Latha','Nirmala UI',sans-serif;
+  background:var(--bg);color:var(--text);
+  display:flex;flex-direction:column;
+}
 
-  :root, :root[data-theme="dark"] {
-    --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #242424; --border: #333;
-    --text: #e8e8e8; --text2: #999; --accent: #4f8ef7; --chord: #ff4444;
-    --key-badge: #1e3a1e; --key-text: #4caf50; --fav: #ffb400;
-    --lyric-size: 17px;
-  }
-  :root[data-theme="light"] {
-    --bg: #f4f5f7; --surface: #ffffff; --surface2: #eceef1; --border: #d5d8dd;
-    --text: #1a1a1a; --text2: #6b7280; --accent: #2563eb; --chord: #d40000;
-    --key-badge: #e3f5e3; --key-text: #2e7d32; --fav: #e69a00;
-  }
+/* ── Splash ── */
+#splash{
+  position:fixed;inset:0;z-index:999;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  transition:opacity .4s,visibility .4s;
+}
+#splash.hidden{opacity:0;visibility:hidden}
+#splash img{width:90px;height:90px;border-radius:20px;box-shadow:0 8px 32px rgba(108,143,255,.3)}
+#splash .splash-title{font-size:22px;font-weight:700;color:var(--text)}
+#splash .splash-sub{font-size:13px;color:var(--text2)}
+.progress-track{width:200px;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width .3s}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── App shell ── */
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
 
-  body {
-    font-family: 'Noto Sans Tamil', 'Latha', 'Nirmala UI', sans-serif;
-    background: var(--bg); color: var(--text);
-    height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
-  }
+/* ── Header ── */
+.app-header{
+  flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 14px;padding-top:env(safe-area-inset-top,0);
+}
+.header-main{
+  height:var(--hdr-h);display:flex;align-items:center;gap:10px;
+}
+.app-logo{height:32px;width:32px;border-radius:8px;object-fit:cover}
+.app-title{font-size:16px;font-weight:700;flex:1;color:var(--text)}
+.hdr-btn{
+  width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+  background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  cursor:pointer;font-size:16px;color:var(--text);flex-shrink:0;
+}
+.hdr-btn:active{opacity:.6}
+#install-btn{display:none;font-size:12px;width:auto;padding:0 10px;gap:4px}
 
-  header {
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    padding: 10px 14px; display: flex; gap: 8px; align-items: center;
-    flex-wrap: wrap; flex-shrink: 0;
-  }
-  .app-logo {
-    height: 34px; width: auto; border-radius: 6px; background: #fff;
-    padding: 2px 5px; flex-shrink: 0;
-  }
-  #searchbox {
-    flex: 1; min-width: 140px; background: var(--surface2);
-    border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px;
-    color: var(--text); font-size: 15px; font-family: inherit; outline: none;
-  }
-  #searchbox:focus { border-color: var(--accent); }
-  #searchbox::placeholder { color: var(--text2); }
-  #song-count { font-size: 12px; color: var(--text2); white-space: nowrap; }
+.search-wrap{padding-bottom:10px}
+.search-inner{
+  display:flex;align-items:center;gap:8px;
+  background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:12px;padding:0 12px;
+  transition:border-color .2s;
+}
+.search-inner:focus-within{border-color:var(--accent)}
+.search-icon{font-size:16px;color:var(--text2);flex-shrink:0}
+#searchbox{
+  flex:1;background:none;border:none;outline:none;
+  padding:10px 0;font-size:15px;color:var(--text);font-family:inherit;
+}
+#searchbox::placeholder{color:var(--text2)}
+#search-clear{
+  font-size:14px;color:var(--text2);cursor:pointer;display:none;padding:4px;
+}
 
-  .toggle { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; white-space: nowrap; }
-  .toggle input { display: none; }
-  .toggle .track {
-    width: 38px; height: 22px; background: var(--surface2);
-    border: 1px solid var(--border); border-radius: 11px; position: relative;
-    transition: background 0.2s; flex-shrink: 0;
-  }
-  .toggle .knob {
-    position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
-    background: var(--text2); border-radius: 50%;
-    transition: transform 0.2s, background 0.2s;
-  }
-  .toggle input:checked + .track { background: var(--chord); border-color: var(--chord); }
-  .toggle input:checked + .track .knob { transform: translateX(16px); background: #fff; }
-  .toggle-label { font-size: 12px; color: var(--text2); }
-  .toggle input:checked ~ .toggle-label { color: var(--chord); }
+/* ── Content area ── */
+.content-area{flex:1;display:flex;overflow:hidden;position:relative}
 
-  .btn {
-    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
-    border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: 13px;
-    font-family: inherit; transition: background 0.1s; white-space: nowrap;
-  }
-  .btn:hover { background: var(--border); }
-  .btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .icon-btn { padding: 5px 9px; font-size: 15px; line-height: 1; }
-  #fav-filter-btn.active { background: var(--fav); border-color: var(--fav); color: #000; }
-  #install-btn { display: none; background: var(--accent); border-color: var(--accent); color: #fff; }
+/* ── List view ── */
+#list-view{
+  flex:1;display:flex;flex-direction:column;overflow:hidden;
+  background:var(--bg);
+  transition:transform .28s cubic-bezier(.4,0,.2,1);
+}
+#song-count-bar{
+  padding:6px 14px;font-size:12px;color:var(--text2);
+  background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;flex-shrink:0;
+}
+#song-count-bar .count{flex:1}
+.filter-pill{
+  padding:3px 10px;border-radius:20px;font-size:11px;cursor:pointer;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text2);
+  transition:all .15s;
+}
+.filter-pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.filter-pill.fav-pill.active{background:var(--fav);border-color:var(--fav);color:#000}
 
-  .main { display: flex; flex: 1; overflow: hidden; position: relative; }
+#song-list{flex:1;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
+.song-item{
+  padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+  transition:background .1s;
+  content-visibility:auto;contain-intrinsic-size:auto 64px;
+}
+.song-item:active{background:var(--surface2)}
+.song-item.active{background:#1a1f3a;border-left:3px solid var(--accent)}
+:root[data-theme="light"] .song-item.active{background:#dde4ff}
+.song-num{font-size:11px;color:var(--text2);font-family:monospace;min-width:28px;flex-shrink:0}
+.song-info{flex:1;min-width:0}
+.song-title{font-size:14px;color:var(--text);line-height:1.3}
+.song-eng{font-size:11px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song-badges{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.badge-chord{width:8px;height:8px;background:var(--chord);border-radius:50%}
+.badge-fav{color:var(--fav);font-size:13px;line-height:1}
 
-  #song-list {
-    width: 300px; flex-shrink: 0; background: var(--surface);
-    border-right: 1px solid var(--border); overflow-y: auto;
-  }
-  .song-item { padding: 10px 14px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
-  .song-item:hover { background: var(--surface2); }
-  .song-item.active { background: #1a2a4a; border-left: 3px solid var(--accent); }
-  :root[data-theme="light"] .song-item.active { background: #dbe7ff; }
-  .song-item .num { font-size: 11px; color: var(--text2); font-family: monospace; }
-  .song-item .tamil { font-size: 14px; color: var(--text); margin-top: 2px; }
-  .song-item .eng { font-size: 11px; color: var(--text2); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .badge-chord { display: inline-block; width: 6px; height: 6px; background: var(--chord); border-radius: 50%; margin-left: 4px; vertical-align: middle; }
-  .badge-fav { color: var(--fav); font-size: 11px; margin-left: 3px; }
+.list-empty{padding:48px 24px;text-align:center;color:var(--text2);font-size:15px}
 
-  #song-detail { flex: 1; overflow-y: auto; padding: 20px 24px; }
-  #song-detail.empty { display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 18px; }
+/* ── Detail view ── */
+#detail-view{
+  position:absolute;inset:0;
+  background:var(--bg);overflow-y:auto;overscroll-behavior:contain;
+  transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  will-change:transform;
+}
+#detail-view.show{transform:translateX(0)}
 
-  .song-header { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
-  .song-header .number { font-size: 12px; color: var(--text2); font-family: monospace; margin-bottom: 4px; }
-  .song-header .tamil-title { font-size: 25px; font-weight: 700; color: var(--text); line-height: 1.3; }
-  .song-header .eng-title { font-size: 14px; color: var(--text2); margin-top: 4px; }
+/* On desktop: side by side */
+@media(min-width:700px){
+  #list-view{max-width:320px;border-right:1px solid var(--border);flex-shrink:0}
+  #detail-view{position:static;transform:none !important;flex:1}
+  .back-btn{display:none !important}
+  .bottom-nav{display:none !important}
+  .search-wrap{padding-bottom:10px}
+}
 
-  .music-info { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
-  .info-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--text2); }
-  .info-chip.key { color: var(--key-text); background: var(--key-badge); border-color: var(--key-text); }
+.detail-inner{padding:18px 18px calc(var(--nav-h) + var(--safe-b) + 16px)}
+.back-btn{
+  display:flex;align-items:center;gap:6px;
+  background:none;border:none;color:var(--accent);font-size:14px;
+  cursor:pointer;padding:0;margin-bottom:14px;font-family:inherit;
+}
+.back-btn:active{opacity:.6}
+.song-header{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.song-number{font-size:11px;color:var(--text2);font-family:monospace;margin-bottom:4px}
+.song-tamil-title{font-size:24px;font-weight:700;line-height:1.3;color:var(--text)}
+.song-eng-title{font-size:13px;color:var(--text2);margin-top:4px}
+.music-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:12px;color:var(--text2)}
+.chip.key{color:var(--key-text);background:var(--key-bg);border-color:var(--key-text)}
+.chip.chord-chip{color:var(--chord);border-color:var(--chord)}
 
-  /* Song toolbar (fav / setlist / font size / transpose) */
-  .toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
-  .toolbar .group { display: flex; align-items: center; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 3px 6px; }
-  .toolbar .group > span { font-size: 11px; color: var(--text2); margin: 0 2px; }
-  .tbtn { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 13px; font-family: inherit; }
-  .tbtn:hover { background: var(--border); }
-  .tbtn.on { background: var(--fav); border-color: var(--fav); color: #000; }
-  .tbtn.set-on { background: var(--accent); border-color: var(--accent); color: #fff; }
-  #transpose-value { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 13px; font-family: monospace; color: var(--accent); min-width: 40px; text-align: center; }
+/* Action bar */
+.action-bar{
+  display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;
+  padding:10px 14px;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--radius);
+}
+.action-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:7px 12px;border-radius:10px;font-size:13px;
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);cursor:pointer;font-family:inherit;
+  transition:all .15s;white-space:nowrap;
+}
+.action-btn:active{opacity:.6}
+.action-btn.on{background:var(--fav);border-color:var(--fav);color:#000}
+.action-btn.set-on{background:var(--accent);border-color:var(--accent);color:#fff}
+.action-btn.chord-on{background:var(--chord);border-color:var(--chord);color:#fff}
 
-  .nav-row { display: flex; gap: 8px; margin-bottom: 14px; }
-  .nav-row .btn { flex: 1; text-align: center; }
+/* Transpose row */
+.transpose-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.tr-label{font-size:12px;color:var(--text2)}
+.tr-btn{
+  width:36px;height:36px;border-radius:10px;font-size:18px;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.tr-btn:active{background:var(--border)}
+#transpose-value{
+  font-size:14px;font-family:monospace;color:var(--accent);
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:4px 10px;min-width:44px;text-align:center;
+}
 
-  .slide { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; margin-bottom: 12px; }
+/* Setlist nav */
+.nav-row{display:flex;gap:8px;margin-bottom:14px}
+.nav-row .nav-btn{
+  flex:1;padding:10px;border-radius:12px;font-size:13px;text-align:center;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  cursor:pointer;font-family:inherit;
+}
+.nav-row .nav-btn:disabled{opacity:.35;cursor:default}
+.nav-row .nav-btn:active:not(:disabled){background:var(--border)}
 
-  /* Chorded line: chord row above lyric, both nowrap, horizontally scrollable so
-     nothing wraps and chord/lyric stay aligned. */
-  .lyric-line { margin-bottom: 4px; }
-  .lyric-line.has-chord { overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; }
-  .lyric-line.has-chord .chord-row,
-  .lyric-line.has-chord .lyric-text { white-space: pre; }
-  .lyric-line.no-chord .lyric-text { white-space: pre-wrap; }
-  .chord-row { font-family: 'Consolas', monospace; color: var(--chord); font-weight: 700; font-size: calc(var(--lyric-size) * 0.8); line-height: 1.4; }
-  .lyric-text { color: var(--text); font-size: var(--lyric-size); line-height: 1.5; }
-  .lyric-line.has-chord::-webkit-scrollbar { height: 4px; }
-  .lyric-line.has-chord::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+/* Share btn */
+#share-btn{margin-left:auto}
 
-  .no-chords-msg { color: var(--text2); font-size: 13px; font-style: italic; margin-bottom: 16px; padding: 10px 14px; background: var(--surface2); border-radius: 8px; border-left: 3px solid var(--border); }
+/* Lyrics */
+.no-chords-note{
+  font-size:12px;color:var(--text2);font-style:italic;
+  padding:8px 14px;background:var(--surface2);border-radius:10px;
+  border-left:3px solid var(--border);margin-bottom:14px;
+}
+.slide{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;
+}
+.lyric-line{margin-bottom:4px}
+.lyric-line.has-chord{overflow-x:auto;overflow-y:hidden;padding-bottom:2px}
+.lyric-line.has-chord .chord-row,
+.lyric-line.has-chord .lyric-text{white-space:pre}
+.lyric-line.no-chord .lyric-text{white-space:pre-wrap}
+.chord-row{font-family:'Consolas',monospace;color:var(--chord);font-weight:700;font-size:calc(var(--lyric-size)*.82);line-height:1.4}
+.lyric-text{color:var(--text);font-size:var(--lyric-size);line-height:1.6}
+.lyric-line.has-chord::-webkit-scrollbar{height:3px}
+.lyric-line.has-chord::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
-  /* Set list panel */
-  #setlist-panel {
-    position: absolute; top: 0; right: 0; bottom: 0; width: 320px; max-width: 88%;
-    background: var(--surface); border-left: 1px solid var(--border);
-    transform: translateX(100%); transition: transform 0.25s; z-index: 20;
-    display: flex; flex-direction: column; box-shadow: -8px 0 24px rgba(0,0,0,0.3);
-  }
-  #setlist-panel.open { transform: translateX(0); }
-  .setlist-head { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-  .setlist-head h3 { font-size: 15px; }
-  .setlist-body { flex: 1; overflow-y: auto; }
-  .setlist-empty { padding: 24px 16px; color: var(--text2); font-size: 13px; text-align: center; }
-  .sl-item { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
-  .sl-item .sl-title { flex: 1; font-size: 13px; cursor: pointer; overflow: hidden; }
-  .sl-item .sl-title .n { color: var(--text2); font-family: monospace; font-size: 11px; }
-  .sl-item .mini { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 4px; width: 24px; height: 24px; cursor: pointer; font-size: 12px; line-height: 1; }
-  .sl-item .mini:hover { background: var(--border); }
+/* Loading skeleton for lyrics */
+.skel-line{height:18px;background:var(--surface2);border-radius:6px;margin-bottom:10px;animation:shimmer 1.2s infinite}
+@keyframes shimmer{0%{opacity:.4}50%{opacity:.8}100%{opacity:.4}}
 
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+/* ── Bottom nav ── */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--surface);border-top:1px solid var(--border);
+  display:flex;z-index:30;
+  padding-bottom:var(--safe-b);
+  padding-left:var(--safe-l);padding-right:var(--safe-r);
+}
+.nav-tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:8px 4px;cursor:pointer;
+  background:none;border:none;color:var(--text2);font-family:inherit;
+  transition:color .15s;min-height:var(--nav-h);
+}
+.nav-tab.active{color:var(--accent)}
+.nav-icon{font-size:20px;line-height:1;margin-bottom:3px}
+.nav-label{font-size:10px}
 
-  .back-btn { display: none; align-items: center; gap: 6px; background: none; border: none; color: var(--accent); font-size: 14px; cursor: pointer; padding: 0; margin-bottom: 12px; font-family: inherit; }
+/* ── Set list sheet ── */
+#setlist-sheet{
+  position:fixed;inset:0;z-index:50;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  pointer-events:none;
+}
+#setlist-sheet .sheet-backdrop{
+  position:absolute;inset:0;background:rgba(0,0,0,.5);
+  opacity:0;transition:opacity .25s;
+}
+#setlist-sheet .sheet-panel{
+  position:relative;z-index:1;
+  background:var(--surface);border-radius:20px 20px 0 0;
+  max-height:70dvh;display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+  padding-bottom:var(--safe-b);
+}
+#setlist-sheet.open .sheet-backdrop{opacity:1;pointer-events:all}
+#setlist-sheet.open .sheet-panel{transform:translateY(0);pointer-events:all}
+#setlist-sheet.open{pointer-events:all}
+.sheet-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:10px auto}
+.sheet-head{padding:4px 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.sheet-head h3{font-size:16px}
+.sheet-body{overflow-y:auto;flex:1}
+.sheet-empty{padding:32px;text-align:center;color:var(--text2);font-size:14px}
+.sl-item{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border)}
+.sl-title{flex:1;font-size:13px;cursor:pointer;overflow:hidden}
+.sl-n{color:var(--text2);font-family:monospace;font-size:11px}
+.sl-btn{width:30px;height:30px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+.sl-btn:active{background:var(--border)}
+.sl-btn:disabled{opacity:.3;cursor:default}
 
-  @media (max-width: 640px) {
-    #song-list { width: 100%; display: none; }
-    #song-list.show { display: block; }
-    #song-detail { display: none; }
-    #song-detail.show { display: block; }
-    .back-btn { display: inline-flex !important; }
-    header { flex-wrap: wrap; gap: 6px; }
-    #searchbox { min-width: 0; width: 100%; order: 2; flex-basis: 100%; }
-  }
+/* scrollbars */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 </style>
 </head>
 <body>
 
-<header>
-  <img src="./logo.png" alt="JHGPH Prayer House Cheyyar" class="app-logo">
-  <input id="searchbox" type="text" placeholder="பாடல் எண் அல்லது பெயர் தேடுங்கள்..." autocomplete="off">
-  <label class="toggle" title="Show only songs that have chords">
-    <input type="checkbox" id="chords-only-toggle">
-    <span class="track"><span class="knob"></span></span>
-    <span class="toggle-label">🎸</span>
-  </label>
-  <button id="fav-filter-btn" class="btn icon-btn" title="Show favourites only">★</button>
-  <button id="setlist-btn" class="btn icon-btn" title="Set list">📋<span id="setlist-badge"></span></button>
-  <button id="theme-btn" class="btn icon-btn" title="Light / dark theme">🌙</button>
-  <button id="install-btn" class="btn" title="Install app">⬇ Install</button>
-  <span id="song-count"></span>
-</header>
+<!-- Splash screen -->
+<div id="splash">
+  <img src="./logo.png" alt="Logo">
+  <div class="splash-title">JHGPH Songbook</div>
+  <div class="splash-sub">பாடல்கள் ஏற்றுகிறது...</div>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+</div>
 
-<div class="main">
-  <div id="song-list"></div>
-  <div id="song-detail" class="empty"><span>ஒரு பாடலை தேர்ந்தெடுக்கவும்</span></div>
-
-  <div id="setlist-panel">
-    <div class="setlist-head">
-      <h3>📋 Set List</h3>
-      <div>
-        <button class="btn" id="setlist-clear" style="font-size:11px">Clear</button>
-        <button class="btn icon-btn" id="setlist-close">✕</button>
+<!-- Main app -->
+<div id="app">
+  <!-- Header -->
+  <div class="app-header">
+    <div class="header-main">
+      <img class="app-logo" src="./logo.png" alt="">
+      <span class="app-title">JHGPH Songbook</span>
+      <button class="hdr-btn" id="theme-btn" title="Theme">🌙</button>
+      <button class="hdr-btn" id="install-btn" title="Install">⬇ Install</button>
+    </div>
+    <div class="search-wrap">
+      <div class="search-inner">
+        <span class="search-icon">🔍</span>
+        <input id="searchbox" type="search" placeholder="பாடல் எண் அல்லது பெயர் தேடுங்கள்..." autocomplete="off" autocorrect="off">
+        <span id="search-clear">✕</span>
       </div>
     </div>
-    <div class="setlist-body" id="setlist-body"></div>
+  </div>
+
+  <div class="content-area">
+    <!-- List view -->
+    <div id="list-view">
+      <div id="song-count-bar">
+        <span class="count" id="song-count">ஏற்றுகிறது...</span>
+        <span class="filter-pill" id="chords-pill" onclick="toggleFilter('chords')">🎸 Chords</span>
+        <span class="filter-pill fav-pill" id="fav-pill" onclick="toggleFilter('favs')">★ Favs</span>
+      </div>
+      <div id="song-list"></div>
+    </div>
+
+    <!-- Detail view -->
+    <div id="detail-view">
+      <div class="detail-inner" id="detail-inner">
+        <div class="list-empty" style="margin-top:30vh">ஒரு பாடலை தேர்ந்தெடுக்கவும்</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom nav (mobile only) -->
+  <nav class="bottom-nav">
+    <button class="nav-tab active" id="tab-songs" onclick="goHome()">
+      <span class="nav-icon">♪</span>
+      <span class="nav-label">பாடல்கள்</span>
+    </button>
+    <button class="nav-tab" id="tab-chords" onclick="toggleFilter('chords')">
+      <span class="nav-icon">🎸</span>
+      <span class="nav-label">Chords</span>
+    </button>
+    <button class="nav-tab" id="tab-favs" onclick="toggleFilter('favs')">
+      <span class="nav-icon">★</span>
+      <span class="nav-label">Favourites</span>
+    </button>
+    <button class="nav-tab" id="tab-set" onclick="openSetlistSheet()">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">Set list <span id="setlist-badge"></span></span>
+    </button>
+  </nav>
+</div>
+
+<!-- Set list bottom sheet -->
+<div id="setlist-sheet">
+  <div class="sheet-backdrop" onclick="closeSetlistSheet()"></div>
+  <div class="sheet-panel">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h3>📋 Set List</h3>
+      <div style="display:flex;gap:8px">
+        <button class="sl-btn" onclick="clearSetlist()" style="width:auto;padding:0 10px;font-size:12px">Clear</button>
+        <button class="sl-btn" onclick="closeSetlistSheet()">✕</button>
+      </div>
+    </div>
+    <div class="sheet-body" id="setlist-body"></div>
   </div>
 </div>
 
 <script>
+// ── Constants ──
 const CHROMATIC = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const ENHARMONIC = {'Db':'C#','Eb':'D#','Fb':'E','Gb':'F#','Ab':'G#','Bb':'A#','Cb':'B'};
-function transposeChord(chord, steps) {
-  if (!chord || steps === 0) return chord;
-  return chord.replace(/[A-G][b#]?/g, (note) => {
-    const clean = ENHARMONIC[note] || note;
-    const idx = CHROMATIC.indexOf(clean);
-    if (idx === -1) return note;
-    return CHROMATIC[((idx + steps) % 12 + 12) % 12];
-  });
-}
-function transposeLine(line, steps) {
-  if (!line || steps === 0) return line;
-  return line.replace(/[A-G][b#]?(?:m|maj|min|aug|dim|sus|add)?[0-9]?(?:\/[A-G][b#]?)?/g, (c) => transposeChord(c, steps));
-}
+function transposeChord(c,s){if(!c||!s)return c;return c.replace(/[A-G][b#]?/g,n=>{const k=ENHARMONIC[n]||n,i=CHROMATIC.indexOf(k);return i<0?n:CHROMATIC[((i+s)%12+12)%12]})}
+function transposeLine(l,s){if(!l||!s)return l;return l.replace(/[A-G][b#]?(?:m|maj|min|aug|dim|sus|add)?[0-9]?(?:\/[A-G][b#]?)?/g,c=>transposeChord(c,s))}
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
-let ALL_SONGS = [], activeSong = null, currentTranspose = 0;
-let chordsOnly = false, favOnly = false, showChords = true;
-let favs = new Set(JSON.parse(localStorage.getItem('njp-favs') || '[]'));
-let setlist = JSON.parse(localStorage.getItem('njp-setlist') || '[]');
-let fontSize = parseInt(localStorage.getItem('njp-fontsize') || '17', 10);
+// ── State ──
+let INDEX = [];       // lightweight list (from songs-index.json)
+let DETAIL = {};      // id→full song data (from songs.json), populated lazily
+let fullLoaded = false;
+let fullSongs = null; // full array once loaded
 
-function saveFavs() { localStorage.setItem('njp-favs', JSON.stringify([...favs])); }
-function saveSetlist() { localStorage.setItem('njp-setlist', JSON.stringify(setlist)); updateSetlistBadge(); }
-function applyFontSize() { document.documentElement.style.setProperty('--lyric-size', fontSize + 'px'); }
+let filtered = [];
+let activeSong = null, currentTranspose = 0, showChords = true;
+let chordsOnly = false, favOnly = false;
+let favs = new Set(JSON.parse(localStorage.getItem('njp-favs')||'[]'));
+let setlist = JSON.parse(localStorage.getItem('njp-setlist')||'[]');
+let fontSize = parseInt(localStorage.getItem('njp-fontsize')||'17',10);
+let wakeLock = null;
 
-fetch('./songs.json').then(r => r.json()).then(data => {
-  ALL_SONGS = data;
-  applyFilters();
-  // On mobile show the list by default (detail is hidden until a song is opened)
-  if (window.innerWidth <= 640) document.getElementById('song-list').classList.add('show');
-});
+function saveFavs(){localStorage.setItem('njp-favs',JSON.stringify([...favs]))}
+function saveSetlist(){localStorage.setItem('njp-setlist',JSON.stringify(setlist));updateSetBadge()}
+function applyFontSize(){document.documentElement.style.setProperty('--lyric-size',fontSize+'px')}
 
-// ── Filters ──
-function applyFilters() {
-  const q = document.getElementById('searchbox').value.trim().toLowerCase();
-  let list = ALL_SONGS;
-  if (chordsOnly) list = list.filter(s => s.chords);
-  if (favOnly) list = list.filter(s => favs.has(s.id));
-  if (q) list = list.filter(s => s.num === q || s.num.startsWith(q) || s.name.toLowerCase().includes(q) || s.title.includes(q));
-  renderList(list);
-  let label = '';
-  if (chordsOnly) label += ' 🎸';
-  if (favOnly) label += ' ★';
-  document.getElementById('song-count').textContent = list.length + '/' + ALL_SONGS.length + label;
-}
-document.getElementById('searchbox').addEventListener('input', applyFilters);
-document.getElementById('chords-only-toggle').addEventListener('change', function() {
-  chordsOnly = this.checked; localStorage.setItem('njp-chords-only', chordsOnly ? '1' : '0'); applyFilters();
-});
-document.getElementById('fav-filter-btn').addEventListener('click', function() {
-  favOnly = !favOnly; this.classList.toggle('active', favOnly); applyFilters();
-});
-
-// ── Theme ──
-function applyTheme(t) {
-  document.documentElement.setAttribute('data-theme', t);
-  document.getElementById('theme-btn').textContent = t === 'light' ? '☀️' : '🌙';
-  localStorage.setItem('njp-theme', t);
-}
-document.getElementById('theme-btn').addEventListener('click', function() {
-  applyTheme((document.documentElement.getAttribute('data-theme') || 'dark') === 'dark' ? 'light' : 'dark');
-});
-
-(function restore() {
-  applyTheme(localStorage.getItem('njp-theme') || 'dark');
+// ── Boot: load index first, then full data ──
+(function boot(){
+  applyTheme(localStorage.getItem('njp-theme')||'dark');
   applyFontSize();
-  if (localStorage.getItem('njp-chords-only') === '1') { chordsOnly = true; document.getElementById('chords-only-toggle').checked = true; }
-  updateSetlistBadge();
+  if(localStorage.getItem('njp-chords-only')==='1'){chordsOnly=true}
+  updateSetBadge();
+
+  const fill = document.getElementById('progress-fill');
+  fill.style.width='20%';
+
+  fetch('./songs-index.json')
+    .then(r=>r.json())
+    .then(data=>{
+      INDEX = data;
+      fill.style.width='60%';
+      applyFilters();
+      fill.style.width='90%';
+      setTimeout(()=>{
+        document.getElementById('splash').classList.add('hidden');
+        fill.style.width='100%';
+      },200);
+
+      // Load full data in background for lyrics
+      fetch('./songs.json')
+        .then(r=>r.json())
+        .then(songs=>{
+          fullSongs = songs;
+          fullLoaded = true;
+          // Build lookup
+          songs.forEach(s=>{DETAIL[s.id]=s});
+          // If a song is open and was waiting for lyrics, refresh it
+          if(activeSong){
+            const full = DETAIL[activeSong.id];
+            if(full && !activeSong._fullLoaded){
+              activeSong = {...activeSong,...full,_fullLoaded:true};
+              renderDetail(activeSong);
+            }
+          }
+        })
+        .catch(()=>{});
+    })
+    .catch(()=>{
+      document.getElementById('splash').querySelector('.splash-sub').textContent='ஏற்றுவதில் பிழை உள்ளது.';
+    });
 })();
 
-// ── List ──
-function renderList(songs) {
-  document.getElementById('song-list').innerHTML = songs.map(s => `
-    <div class="song-item" data-id="${s.id}" onclick="openSong(${s.id})">
-      <div class="num">${s.num || '—'}${s.chords ? '<span class="badge-chord"></span>' : ''}${favs.has(s.id) ? '<span class="badge-fav">★</span>' : ''}</div>
-      <div class="tamil">${s.title || s.name}</div>
-      <div class="eng">${s.name}</div>
+// ── Filters ──
+function applyFilters(){
+  const q = document.getElementById('searchbox').value.trim().toLowerCase();
+  document.getElementById('search-clear').style.display = q ? 'block' : 'none';
+  let list = INDEX;
+  if(chordsOnly) list = list.filter(s=>s.c);
+  if(favOnly)    list = list.filter(s=>favs.has(s.i));
+  if(q) list = list.filter(s=>{
+    const n=String(s.n||'');
+    return n===q||n.startsWith(q)||
+      (s.t||'').toLowerCase().includes(q)||
+      (s.e||'').toLowerCase().includes(q);
+  });
+  filtered = list;
+  renderList(list);
+  updateCountBar(list.length);
+}
+
+document.getElementById('searchbox').addEventListener('input',applyFilters);
+document.getElementById('search-clear').addEventListener('click',()=>{
+  document.getElementById('searchbox').value='';applyFilters();
+});
+
+function toggleFilter(type){
+  if(type==='chords'){
+    chordsOnly=!chordsOnly;
+    localStorage.setItem('njp-chords-only',chordsOnly?'1':'0');
+    document.getElementById('chords-pill').classList.toggle('active',chordsOnly);
+    document.getElementById('tab-chords').classList.toggle('active',chordsOnly);
+  } else {
+    favOnly=!favOnly;
+    document.getElementById('fav-pill').classList.toggle('active',favOnly);
+    document.getElementById('tab-favs').classList.toggle('active',favOnly);
+  }
+  applyFilters();
+}
+
+function updateCountBar(n){
+  document.getElementById('song-count').textContent=`${n} / ${INDEX.length} பாடல்கள்`;
+}
+
+// ── Render list ──
+function renderList(songs){
+  const el = document.getElementById('song-list');
+  if(!songs.length){
+    el.innerHTML='<div class="list-empty">பாடல்கள் கிடைக்கவில்லை</div>';return;
+  }
+  el.innerHTML = songs.map(s=>`
+    <div class="song-item" data-id="${s.i}" onclick="openSong(${s.i})">
+      <div class="song-num">${s.n||'—'}</div>
+      <div class="song-info">
+        <div class="song-title">${escHtml(s.t||s.e||'')}</div>
+        ${s.e&&s.e!==s.t?`<div class="song-eng">${escHtml(s.e)}</div>`:''}
+      </div>
+      <div class="song-badges">
+        ${s.c?'<div class="badge-chord"></div>':''}
+        ${favs.has(s.i)?'<div class="badge-fav">★</div>':''}
+      </div>
     </div>`).join('');
 }
 
-function openSong(id) {
-  const song = ALL_SONGS.find(s => s.id === id);
-  if (!song) return;
-  activeSong = song; currentTranspose = 0;
-  document.querySelectorAll('.song-item').forEach(el => el.classList.remove('active'));
+// ── Open song ──
+function openSong(id){
+  // Mark active in list
+  document.querySelectorAll('.song-item').forEach(el=>el.classList.remove('active'));
   const item = document.querySelector(`.song-item[data-id="${id}"]`);
-  if (item) { item.classList.add('active'); item.scrollIntoView({block:'nearest'}); }
-  renderDetail(song);
-  document.getElementById('song-list').classList.remove('show');
-  document.getElementById('song-detail').classList.add('show');
+  if(item){item.classList.add('active');item.scrollIntoView({block:'nearest'})}
+
+  // Get data: use full if available, else use index entry
+  const idx = INDEX.find(s=>s.i===id);
+  const full = DETAIL[id];
+  activeSong = full ? {...full,_fullLoaded:true} : {id,...(idx||{}), i:id, _fullLoaded:false};
+  currentTranspose = 0;
+  showChords = true;
+
+  renderDetail(activeSong);
+  showDetailView();
+  acquireWakeLock();
+  history.pushState({songId:id},'','#song-'+id);
 }
 
-function parseNotes(notes) {
-  if (!notes) return {};
-  const p = notes.split('/');
-  return { key: p[0] || '', style: p[1] || '', tempo: (p.find(x => x.startsWith('T-')) || '').replace('T-','') };
+// ── Render detail ──
+function renderDetail(song){
+  const id = song.id || song.i;
+  const title = song.title || song.t || song.name || song.e || '';
+  const engTitle = song.name || song.e || '';
+  const num = song.num || song.n || '';
+  const key = song.key || song.k || '';
+  const hasChords = !!(song.chords && song.chord_lyrics);
+  const isFav = favs.has(id);
+  const inSet = setlist.includes(id);
+
+  let chips = '';
+  if(key) chips += `<span class="chip key">🎵 ${escHtml(key)}</span>`;
+  if(hasChords) chips += `<span class="chip chord-chip">🎸 Chords</span>`;
+
+  // Setlist nav
+  const si = setlist.indexOf(id);
+  const navRow = (si!==-1&&setlist.length>1)?`
+    <div class="nav-row">
+      <button class="nav-btn" onclick="setlistNav(-1)" ${si===0?'disabled':''}>‹ Prev</button>
+      <button class="nav-btn" onclick="setlistNav(1)" ${si===setlist.length-1?'disabled':''}>Next ›</button>
+    </div>`:'';
+
+  const transposeHtml = hasChords ? `
+    <div class="transpose-row">
+      <button class="action-btn ${showChords?'chord-on':''}" id="chords-vis-btn" onclick="toggleChordsVis()">🎸 ${showChords?'ON':'OFF'}</button>
+      <span class="tr-label">Key</span>
+      <button class="tr-btn" onclick="changeTranspose(-1)">−</button>
+      <div id="transpose-value">0</div>
+      <button class="tr-btn" onclick="changeTranspose(+1)">+</button>
+      <button class="tr-btn" onclick="changeTranspose(0,'reset')" style="font-size:13px">↺</button>
+    </div>` : '';
+
+  const shareHtml = 'share' in navigator ? `<button class="action-btn" id="share-btn" onclick="shareSong()">↗ Share</button>` : '';
+
+  document.getElementById('detail-inner').innerHTML = `
+    <button class="back-btn" onclick="goBack()">← Back</button>
+    <div class="song-header">
+      ${num?`<div class="song-number">பாடல் — ${num}</div>`:''}
+      <div class="song-tamil-title">${escHtml(title)}</div>
+      ${engTitle&&engTitle!==title?`<div class="song-eng-title">${escHtml(engTitle)}</div>`:''}
+      ${chips?`<div class="music-chips">${chips}</div>`:''}
+    </div>
+    <div class="action-bar">
+      <button class="action-btn ${isFav?'on':''}" id="fav-btn" onclick="toggleFav(${id})">${isFav?'★':'☆'} ${isFav?'Saved':'Favourite'}</button>
+      <button class="action-btn ${inSet?'set-on':''}" id="set-btn" onclick="toggleSetlist(${id})">${inSet?'✓ In set':'＋ Set list'}</button>
+      <button class="action-btn" onclick="changeFont(-1)">A−</button>
+      <button class="action-btn" onclick="changeFont(1)">A+</button>
+      ${shareHtml}
+    </div>
+    ${transposeHtml}
+    ${navRow}
+    <div id="lyrics-body"></div>`;
+
+  if(song._fullLoaded){
+    renderLyrics();
+  } else {
+    // Show skeleton while full data loads
+    document.getElementById('lyrics-body').innerHTML =
+      '<div class="slide">' +
+      Array.from({length:6},(_,i)=>`<div class="skel-line" style="width:${60+Math.random()*35}%"></div>`).join('') +
+      '</div>'.repeat(3);
+    // Poll until full data arrives
+    const waitFull = setInterval(()=>{
+      if(DETAIL[id]){
+        clearInterval(waitFull);
+        const updated = {...DETAIL[id],_fullLoaded:true};
+        if(activeSong && (activeSong.id===id||activeSong.i===id)){
+          activeSong = updated;
+          renderLyrics();
+        }
+      }
+    },200);
+  }
 }
 
-function buildSlides(lyricsStr, chordsStr, steps) {
-  if (!lyricsStr) return [];
-  const L = lyricsStr.split('<slide>'), C = chordsStr ? chordsStr.split('<slide>') : [];
-  return L.map((blk, si) => {
-    const lines = blk.split('<BR>').filter(l => l.trim());
-    const cl = (C[si] || '').split(/<br>/i);
-    return lines.map((lyric, li) => {
-      let chord = (cl[li] || '').trimEnd();
-      if (chord && steps !== 0) chord = transposeLine(chord, steps);
-      return { lyric, chord };
+// ── Render lyrics ──
+function buildSlides(lyricsStr,chordsStr,steps){
+  if(!lyricsStr)return[];
+  const L=lyricsStr.split('<slide>'),C=chordsStr?chordsStr.split('<slide>'):[];
+  return L.map((blk,si)=>{
+    const lines=blk.split('<BR>').filter(l=>l.trim());
+    const cl=(C[si]||'').split(/<br>/i);
+    return lines.map((lyric,li)=>{
+      let chord=(cl[li]||'').trimEnd();
+      if(chord&&steps)chord=transposeLine(chord,steps);
+      return{lyric,chord};
     });
   });
 }
 
-function renderDetail(song) {
-  const detail = document.getElementById('song-detail');
-  detail.classList.remove('empty');
-  const info = parseNotes(song.notes);
-  const key = song.key || info.key || '', style = info.style || '', tempo = info.tempo || '';
-  const hasChords = !!(song.chords && song.chord_lyrics);
-  const isFav = favs.has(song.id);
-  const inSet = setlist.includes(song.id);
-
-  let chips = '';
-  if (key) chips += `<span class="info-chip key">🎵 ${key}</span>`;
-  if (tempo) chips += `<span class="info-chip">♩ ${tempo} BPM</span>`;
-  if (style) chips += `<span class="info-chip">🎼 ${style}</span>`;
-  if (hasChords) chips += `<span class="info-chip" style="color:#ff4444;border-color:#ff4444">🎸 Chords</span>`;
-
-  const transposeGroup = hasChords ? `
-    <button class="tbtn ${showChords?'set-on':''}" id="chords-vis-btn" onclick="toggleChordsVis()">${showChords?'🎸 Chords ON':'🎸 Chords OFF'}</button>
-    <div class="group"><span>Key</span>
-      <button class="tbtn" onclick="changeTranspose(-1)">−</button>
-      <div id="transpose-value">0</div>
-      <button class="tbtn" onclick="changeTranspose(+1)">+</button>
-      <button class="tbtn" onclick="changeTranspose(0,'reset')" style="font-size:11px">↺</button>
-    </div>` : '';
-
-  // prev/next within set list
-  let navRow = '';
-  const idx = setlist.indexOf(song.id);
-  if (idx !== -1 && setlist.length > 1) {
-    navRow = `<div class="nav-row">
-      <button class="btn" onclick="setlistNav(-1)" ${idx===0?'disabled':''}>‹ Prev</button>
-      <button class="btn" onclick="setlistNav(1)" ${idx===setlist.length-1?'disabled':''}>Next ›</button>
-    </div>`;
+function renderLyrics(){
+  const body=document.getElementById('lyrics-body');
+  if(!body||!activeSong)return;
+  const hasChords=!!(activeSong.chords&&activeSong.chord_lyrics);
+  const slides=buildSlides(
+    hasChords?activeSong.chord_lyrics:activeSong.lyrics,
+    hasChords?activeSong.chords:'',
+    currentTranspose
+  );
+  if(!slides.length){
+    body.innerHTML='<div class="no-chords-note">இந்த பாடலுக்கு lyrics இல்லை</div>';return;
   }
+  if(!hasChords){
+    body.innerHTML=`<div class="no-chords-note">Chords இல்லை — lyrics மட்டுமே காட்டப்படுகிறது</div>`+
+      slides.map(lines=>`<div class="slide">${lines.map(({lyric})=>
+        `<div class="lyric-line no-chord"><div class="lyric-text">${escHtml(lyric)}</div></div>`
+      ).join('')}</div>`).join('');
+    return;
+  }
+  body.innerHTML=slides.map(lines=>`<div class="slide">${
+    lines.map(({lyric,chord})=>{
+      const dc=showChords&&chord;
+      return`<div class="lyric-line ${dc?'has-chord':'no-chord'}">
+        ${dc?`<div class="chord-row">${escHtml(chord)}</div>`:''}
+        <div class="lyric-text">${escHtml(lyric)}</div>
+      </div>`;
+    }).join('')
+  }</div>`).join('');
+  const tv=document.getElementById('transpose-value');
+  if(tv)tv.textContent=currentTranspose>=0?'+'+currentTranspose:''+currentTranspose;
+}
 
-  detail.innerHTML = `
-    <button class="back-btn" onclick="showList()">← Back</button>
-    <div class="song-header">
-      <div class="number">பாடல் — ${song.num || '?'}</div>
-      <div class="tamil-title">${song.title || song.name}</div>
-      <div class="eng-title">${song.name}</div>
-      ${chips ? `<div class="music-info">${chips}</div>` : ''}
-    </div>
-    <div class="toolbar">
-      <button class="tbtn ${isFav?'on':''}" id="fav-btn" onclick="toggleFav(${song.id})">${isFav?'★ Favourite':'☆ Favourite'}</button>
-      <button class="tbtn ${inSet?'set-on':''}" id="set-btn" onclick="toggleSetlist(${song.id})">${inSet?'✓ In set list':'＋ Set list'}</button>
-      <div class="group"><span>A</span>
-        <button class="tbtn" onclick="changeFont(-1)">A−</button>
-        <button class="tbtn" onclick="changeFont(1)">A+</button>
-      </div>
-      ${transposeGroup}
-    </div>
-    ${navRow}
-    ${!hasChords ? '<div class="no-chords-msg">இந்த பாடலுக்கு chords இல்லை — lyrics மட்டுமே</div>' : ''}
-    <div class="lyrics-section" id="lyrics-body"></div>`;
+function changeTranspose(d,mode){
+  if(mode==='reset')currentTranspose=0;else currentTranspose+=d;
   renderLyrics();
 }
-
-function renderLyrics() {
-  if (!activeSong) return;
-  const body = document.getElementById('lyrics-body');
-  if (!body) return;
-  const hasChords = !!(activeSong.chords && activeSong.chord_lyrics);
-  const slides = buildSlides(hasChords ? activeSong.chord_lyrics : activeSong.lyrics, hasChords ? activeSong.chords : '', currentTranspose);
-  body.innerHTML = slides.map(lines => `
-    <div class="slide">
-      ${lines.map(({lyric, chord}) => {
-        const displayChord = showChords && chord;
-        return `<div class="lyric-line ${displayChord ? 'has-chord' : 'no-chord'}">
-          ${displayChord ? `<div class="chord-row">${escHtml(chord)}</div>` : ''}
-          <div class="lyric-text">${escHtml(lyric)}</div>
-        </div>`;
-      }).join('')}
-    </div>`).join('');
-  const tv = document.getElementById('transpose-value');
-  if (tv) tv.textContent = currentTranspose >= 0 ? '+' + currentTranspose : '' + currentTranspose;
-}
-
-function changeTranspose(delta, mode) { if (mode === 'reset') currentTranspose = 0; else currentTranspose += delta; renderLyrics(); }
-function toggleChordsVis() {
-  showChords = !showChords;
-  const b = document.getElementById('chords-vis-btn');
-  if (b) { b.classList.toggle('set-on', showChords); b.textContent = showChords ? '🎸 Chords ON' : '🎸 Chords OFF'; }
+function toggleChordsVis(){
+  showChords=!showChords;
+  const b=document.getElementById('chords-vis-btn');
+  if(b){b.classList.toggle('chord-on',showChords);b.textContent='🎸 '+(showChords?'ON':'OFF')}
   renderLyrics();
 }
-function changeFont(delta) { fontSize = Math.max(13, Math.min(30, fontSize + delta)); localStorage.setItem('njp-fontsize', fontSize); applyFontSize(); }
+function changeFont(d){fontSize=Math.max(13,Math.min(30,fontSize+d));localStorage.setItem('njp-fontsize',fontSize);applyFontSize()}
+
+// ── Navigation ──
+function showDetailView(){
+  document.getElementById('detail-view').classList.add('show');
+  document.getElementById('tab-songs').classList.remove('active');
+}
+function goBack(){
+  document.getElementById('detail-view').classList.remove('show');
+  document.getElementById('tab-songs').classList.add('active');
+  releaseWakeLock();
+  history.back();
+}
+function goHome(){
+  document.getElementById('detail-view').classList.remove('show');
+  document.getElementById('tab-songs').classList.add('active');
+  releaseWakeLock();
+}
+
+window.addEventListener('popstate',e=>{
+  if(!e.state?.songId){
+    document.getElementById('detail-view').classList.remove('show');
+    document.getElementById('tab-songs').classList.add('active');
+    releaseWakeLock();
+  }
+});
+
+// Swipe right to go back
+(function swipeBack(){
+  let sx=0,sy=0;
+  document.getElementById('detail-view').addEventListener('touchstart',e=>{
+    sx=e.touches[0].clientX;sy=e.touches[0].clientY;
+  },{passive:true});
+  document.getElementById('detail-view').addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-sx;
+    const dy=Math.abs(e.changedTouches[0].clientY-sy);
+    if(dx>60&&dy<50&&sx<40)goBack();
+  },{passive:true});
+})();
+
+// ── Theme ──
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  document.getElementById('theme-btn').textContent=t==='light'?'☀️':'🌙';
+  localStorage.setItem('njp-theme',t);
+}
+document.getElementById('theme-btn').addEventListener('click',()=>{
+  applyTheme((document.documentElement.getAttribute('data-theme')||'dark')==='dark'?'light':'dark');
+});
 
 // ── Favourites ──
-function toggleFav(id) {
-  if (favs.has(id)) favs.delete(id); else favs.add(id);
+function toggleFav(id){
+  if(favs.has(id))favs.delete(id);else favs.add(id);
   saveFavs();
-  const b = document.getElementById('fav-btn');
-  const on = favs.has(id);
-  if (b) { b.classList.toggle('on', on); b.textContent = on ? '★ Favourite' : '☆ Favourite'; }
-  applyFilters();
+  const b=document.getElementById('fav-btn');
+  if(b){const on=favs.has(id);b.classList.toggle('on',on);b.textContent=(on?'★ Saved':'☆ Favourite')}
+  // Refresh badge in list
+  const li=document.querySelector(`.song-item[data-id="${id}"] .badge-fav`);
+  if(favs.has(id)&&!li){const badges=document.querySelector(`.song-item[data-id="${id}"] .song-badges`);if(badges)badges.insertAdjacentHTML('beforeend','<div class="badge-fav">★</div>')}
+  else if(!favs.has(id)&&li)li.remove();
+  if(favOnly)applyFilters();
 }
 
 // ── Set list ──
-function toggleSetlist(id) {
-  const i = setlist.indexOf(id);
-  if (i === -1) setlist.push(id); else setlist.splice(i, 1);
+function toggleSetlist(id){
+  const i=setlist.indexOf(id);
+  if(i===-1)setlist.push(id);else setlist.splice(i,1);
   saveSetlist();
-  if (activeSong && activeSong.id === id) renderDetail(activeSong);
+  if(activeSong&&(activeSong.id===id||activeSong.i===id))renderDetail(activeSong);
   renderSetlist();
+  if(navigator.vibrate)navigator.vibrate(20);
 }
-function updateSetlistBadge() {
-  const b = document.getElementById('setlist-badge');
-  if (b) b.textContent = setlist.length ? ' ' + setlist.length : '';
+function updateSetBadge(){
+  const b=document.getElementById('setlist-badge');
+  if(b)b.textContent=setlist.length?'('+setlist.length+')':'';
 }
-function renderSetlist() {
-  const body = document.getElementById('setlist-body');
-  if (!setlist.length) { body.innerHTML = '<div class="setlist-empty">Set list is empty.<br>Open a song and tap "＋ Set list".</div>'; return; }
-  body.innerHTML = setlist.map((id, i) => {
-    const s = ALL_SONGS.find(x => x.id === id); if (!s) return '';
-    return `<div class="sl-item">
-      <div class="sl-title" onclick="openSong(${id})"><span class="n">${s.num || '—'}</span> ${s.title || s.name}</div>
-      <button class="mini" onclick="moveSet(${i},-1)" ${i===0?'disabled':''}>▲</button>
-      <button class="mini" onclick="moveSet(${i},1)" ${i===setlist.length-1?'disabled':''}>▼</button>
-      <button class="mini" onclick="removeSet(${id})">✕</button>
-    </div>`;
-  }).join('');
+function openSetlistSheet(){document.getElementById('setlist-sheet').classList.add('open');renderSetlist()}
+function closeSetlistSheet(){document.getElementById('setlist-sheet').classList.remove('open')}
+function clearSetlist(){if(confirm('Set list அழிக்கவா?')){setlist=[];saveSetlist();renderSetlist();if(activeSong)renderDetail(activeSong)}}
+function renderSetlist(){
+  const body=document.getElementById('setlist-body');
+  if(!setlist.length){body.innerHTML='<div class="sheet-empty">Set list காலியாக உள்ளது.<br>ஒரு பாடலை திறந்து "＋ Set list" அழுத்துங்கள்.</div>';return}
+  const getTitle=id=>{const s=DETAIL[id]||INDEX.find(x=>x.i===id);return s?escHtml(s.title||s.t||s.name||s.e||'—'):'—'};
+  const getNum=id=>{const s=DETAIL[id]||INDEX.find(x=>x.i===id);return s?s.num||s.n||'—':'—'};
+  body.innerHTML=setlist.map((id,i)=>`
+    <div class="sl-item">
+      <div class="sl-title" onclick="openSong(${id});closeSetlistSheet()">
+        <span class="sl-n">${getNum(id)}</span> ${getTitle(id)}
+      </div>
+      <button class="sl-btn" onclick="moveSet(${i},-1)" ${i===0?'disabled':''}>▲</button>
+      <button class="sl-btn" onclick="moveSet(${i},1)" ${i===setlist.length-1?'disabled':''}>▼</button>
+      <button class="sl-btn" onclick="removeSet(${id})">✕</button>
+    </div>`).join('');
 }
-function moveSet(i, dir) {
-  const j = i + dir; if (j < 0 || j >= setlist.length) return;
-  [setlist[i], setlist[j]] = [setlist[j], setlist[i]];
-  saveSetlist(); renderSetlist();
-}
-function removeSet(id) {
-  setlist = setlist.filter(x => x !== id); saveSetlist(); renderSetlist();
-  if (activeSong && activeSong.id === id) renderDetail(activeSong);
-}
-function setlistNav(dir) {
-  if (!activeSong) return;
-  const i = setlist.indexOf(activeSong.id); if (i === -1) return;
-  const j = i + dir; if (j < 0 || j >= setlist.length) return;
+function moveSet(i,d){const j=i+d;if(j<0||j>=setlist.length)return;[setlist[i],setlist[j]]=[setlist[j],setlist[i]];saveSetlist();renderSetlist()}
+function removeSet(id){setlist=setlist.filter(x=>x!==id);saveSetlist();renderSetlist();if(activeSong&&(activeSong.id===id||activeSong.i===id))renderDetail(activeSong)}
+function setlistNav(d){
+  if(!activeSong)return;
+  const id=activeSong.id||activeSong.i;
+  const i=setlist.indexOf(id);if(i===-1)return;
+  const j=i+d;if(j<0||j>=setlist.length)return;
   openSong(setlist[j]);
 }
-document.getElementById('setlist-btn').addEventListener('click', () => {
-  document.getElementById('setlist-panel').classList.toggle('open'); renderSetlist();
-});
-document.getElementById('setlist-close').addEventListener('click', () => document.getElementById('setlist-panel').classList.remove('open'));
-document.getElementById('setlist-clear').addEventListener('click', () => {
-  if (confirm('Clear the whole set list?')) { setlist = []; saveSetlist(); renderSetlist(); if (activeSong) renderDetail(activeSong); }
-});
 
-function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function showList() { document.getElementById('song-list').classList.add('show'); document.getElementById('song-detail').classList.remove('show'); }
+// ── Share ──
+function shareSong(){
+  if(!activeSong)return;
+  const title=activeSong.title||activeSong.t||activeSong.name||activeSong.e||'Song';
+  navigator.share&&navigator.share({title,text:title+' — JHGPH Songbook'}).catch(()=>{});
+}
+
+// ── WakeLock ──
+async function acquireWakeLock(){
+  if(!('wakeLock' in navigator))return;
+  try{wakeLock=await navigator.wakeLock.request('screen')}catch(e){}
+}
+function releaseWakeLock(){if(wakeLock){wakeLock.release();wakeLock=null}}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseWakeLock();else if(activeSong)acquireWakeLock()});
 
 // ── Install prompt ──
-let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault(); deferredPrompt = e;
-  document.getElementById('install-btn').style.display = 'inline-block';
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferredPrompt=e;
+  document.getElementById('install-btn').style.display='flex';
 });
-document.getElementById('install-btn').addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  document.getElementById('install-btn').style.display = 'none';
+document.getElementById('install-btn').addEventListener('click',async()=>{
+  if(!deferredPrompt)return;
+  deferredPrompt.prompt();await deferredPrompt.userChoice;
+  deferredPrompt=null;document.getElementById('install-btn').style.display='none';
 });
-window.addEventListener('appinstalled', () => { document.getElementById('install-btn').style.display = 'none'; });
+window.addEventListener('appinstalled',()=>document.getElementById('install-btn').style.display='none');
 
 // ── Service worker ──
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(e => console.warn('SW:', e)));
-}
+if('serviceWorker' in navigator)
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 </script>
 </body>
 </html>
