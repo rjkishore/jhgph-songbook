@@ -1684,8 +1684,55 @@ document.getElementById('install-btn').addEventListener('click',async()=>{
 window.addEventListener('appinstalled',()=>document.getElementById('install-btn').style.display='none');
 
 // ── Service worker ──
-if('serviceWorker' in navigator)
-  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').then(reg=>{
+      reg.addEventListener('updatefound',()=>{
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange',()=>{
+          if(newSW.state==='installed' && navigator.serviceWorker.controller){
+            // New version ready — show update banner
+            showUpdateBanner(newSW);
+          }
+        });
+      });
+    }).catch(()=>{});
+
+    // If the SW sent a SKIP_WAITING message and reloaded
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{
+      window.location.reload();
+    });
+  });
+}
+
+function showUpdateBanner(newSW){
+  const banner = document.createElement('div');
+  banner.id = 'update-banner';
+  banner.innerHTML = `
+    <span>🎉 New update available!</span>
+    <button onclick="applyUpdate()">Update now</button>
+    <button onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;font-size:18px;cursor:pointer;padding:0 4px">✕</button>
+  `;
+  banner.style.cssText=`
+    position:fixed;bottom:calc(var(--nav-h) + var(--safe-b) + 10px);left:12px;right:12px;
+    background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;
+    border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;
+    z-index:200;box-shadow:0 4px 24px rgba(124,58,237,.5);font-size:14px;
+  `;
+  banner.querySelector('button').style.cssText=`
+    margin-left:auto;background:#fff;color:#4f46e5;border:none;
+    border-radius:8px;padding:6px 14px;font-weight:600;cursor:pointer;font-size:13px;
+  `;
+  document.body.appendChild(banner);
+  window._pendingUpdate = newSW;
+}
+
+function applyUpdate(){
+  if(window._pendingUpdate){
+    window._pendingUpdate.postMessage({type:'SKIP_WAITING'});
+  }
+  document.getElementById('update-banner')?.remove();
+}
 </script>
 </body>
 </html>

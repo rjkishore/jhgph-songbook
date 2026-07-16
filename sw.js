@@ -1,6 +1,6 @@
 // NJP Songs — Service Worker (offline support)
 // Bump CACHE_VERSION whenever app files change to force an update.
-const CACHE_VERSION = 'njp-v5';
+const CACHE_VERSION = 'njp-v6';
 const SHELL = [
   './index.html',
   './manifest.json',
@@ -28,6 +28,10 @@ self.addEventListener('activate', (event) => {
       Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch', (event) => {
