@@ -874,11 +874,9 @@ document.getElementById('search-clear').addEventListener('click',()=>{
 
   voiceBtn.addEventListener('click', ()=>{
     if(listening){ recog.stop(); return; }
-    // Resume AudioContext if blocked (needed on some browsers)
-    try{ recog.start(); } catch(e){
-      // If already started, abort and restart
-      try{ recog.abort(); recog.start(); } catch(err){}
-    }
+    // Recreate recognizer each time — reusing an ended instance throws InvalidStateError
+    recog = makeRecog('ta-IN');
+    try{ recog.start(); } catch(e){}
   });
 })();
 
@@ -1481,7 +1479,7 @@ function openTracker(){
     progWrap.style.display='block';
     analyzeBtn.disabled=true;
 
-    audioBuffer = await audioCtx.decodeAudioData(arrayBuf);
+    audioBuffer = await new Promise((res,rej)=>audioCtx.decodeAudioData(arrayBuf,res,rej));
     const duration = audioBuffer.duration;
     const WINDOW = 0.5; // seconds per chord detection window
     const HOP    = 0.25;
@@ -1612,7 +1610,8 @@ function openTracker(){
   };
 
   function loadFile(file){
-    if(!file||!file.type.startsWith('audio/'))return;
+    if(!file)return;
+    // Accept any audio; some phones return empty type for music files
     currentFile=file;
     drop.style.display='none';
     fileName.textContent=file.name;
