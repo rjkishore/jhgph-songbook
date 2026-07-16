@@ -100,6 +100,13 @@ body{
 #search-clear{
   font-size:14px;color:var(--text2);cursor:pointer;display:none;padding:4px;
 }
+#voice-btn{
+  background:none;border:none;cursor:pointer;padding:4px;
+  font-size:18px;color:var(--text2);line-height:1;flex-shrink:0;
+  transition:color .2s;
+}
+#voice-btn.listening{color:var(--chord);animation:pulse-mic 1s infinite;}
+@keyframes pulse-mic{0%,100%{opacity:1}50%{opacity:.4}}
 
 /* ── Content area ── */
 .content-area{flex:1;display:flex;overflow:hidden;position:relative}
@@ -461,6 +468,7 @@ body{
         <span class="search-icon">🔍</span>
         <input id="searchbox" type="search" placeholder="பாடல் எண் அல்லது பெயர் தேடுங்கள்..." autocomplete="off" autocorrect="off">
         <span id="search-clear">✕</span>
+        <button id="voice-btn" title="Voice search">🎤</button>
       </div>
     </div>
   </div>
@@ -691,6 +699,60 @@ document.getElementById('searchbox').addEventListener('input',applyFilters);
 document.getElementById('search-clear').addEventListener('click',()=>{
   document.getElementById('searchbox').value='';applyFilters();
 });
+
+// ── Voice Search ──────────────────────────────────────────────────────────
+(function initVoiceSearch(){
+  const voiceBtn = document.getElementById('voice-btn');
+  const searchbox = document.getElementById('searchbox');
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if(!SpeechRecognition){
+    voiceBtn.style.display='none'; // hide if browser doesn't support
+    return;
+  }
+
+  const recog = new SpeechRecognition();
+  recog.continuous = false;
+  recog.interimResults = true;
+  recog.maxAlternatives = 1;
+  // Support both Tamil and English — user can speak either
+  recog.lang = 'ta-IN';
+
+  let listening = false;
+
+  voiceBtn.addEventListener('click', ()=>{
+    if(listening){ recog.stop(); return; }
+    try{ recog.start(); } catch(e){}
+  });
+
+  recog.onstart = ()=>{
+    listening = true;
+    voiceBtn.classList.add('listening');
+    voiceBtn.title = 'Listening... (tap to stop)';
+    searchbox.placeholder = '🎤 கேட்கிறேன்...';
+  };
+
+  recog.onresult = (e)=>{
+    const transcript = e.results[0][0].transcript;
+    searchbox.value = transcript;
+    applyFilters();
+    document.getElementById('search-clear').style.display = transcript ? 'block' : 'none';
+  };
+
+  recog.onerror = (e)=>{
+    if(e.error === 'no-speech') return;
+    if(e.error === 'not-allowed'){
+      alert('Microphone permission denied. Please allow microphone access and try again.');
+    }
+  };
+
+  recog.onend = ()=>{
+    listening = false;
+    voiceBtn.classList.remove('listening');
+    voiceBtn.title = 'Voice search';
+    searchbox.placeholder = 'பாடல் எண் அல்லது பெயர் தேடுங்கள்...';
+  };
+})();
 
 // ── Tab management ──
 function setActiveTab(tab, runFilters=true){
