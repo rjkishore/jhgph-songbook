@@ -406,6 +406,7 @@ let fullSongs = null; // full array once loaded
 let filtered = [];
 let activeSong = null, currentTranspose = 0, showChords = true;
 let chordsOnly = false, favOnly = false;
+let activeTab = 'songs'; // 'songs' | 'chords' | 'favs'
 let favs = new Set(JSON.parse(localStorage.getItem('njp-favs')||'[]'));
 let setlist = JSON.parse(localStorage.getItem('njp-setlist')||'[]');
 let fontSize = parseInt(localStorage.getItem('njp-fontsize')||'17',10);
@@ -419,8 +420,11 @@ function applyFontSize(){document.documentElement.style.setProperty('--lyric-siz
 (function boot(){
   applyTheme(localStorage.getItem('njp-theme')||'dark');
   applyFontSize();
-  if(localStorage.getItem('njp-chords-only')==='1'){chordsOnly=true}
   updateSetBadge();
+
+  // Restore saved tab
+  const savedTab = localStorage.getItem('njp-active-tab')||'songs';
+  setActiveTab(savedTab, false); // false = don't re-run applyFilters yet
 
   const fill = document.getElementById('progress-fill');
   fill.style.width='20%';
@@ -484,18 +488,24 @@ document.getElementById('search-clear').addEventListener('click',()=>{
   document.getElementById('searchbox').value='';applyFilters();
 });
 
+// ── Tab management ──
+function setActiveTab(tab, runFilters=true){
+  activeTab = tab;
+  chordsOnly = tab==='chords';
+  favOnly    = tab==='favs';
+  localStorage.setItem('njp-active-tab', tab);
+  localStorage.setItem('njp-chords-only', chordsOnly?'1':'0');
+  document.getElementById('tab-songs').classList.toggle('active', tab==='songs');
+  document.getElementById('tab-chords').classList.toggle('active', tab==='chords');
+  document.getElementById('tab-favs').classList.toggle('active', tab==='favs');
+  document.getElementById('chords-pill').classList.toggle('active', chordsOnly);
+  document.getElementById('fav-pill').classList.toggle('active', favOnly);
+  if(runFilters) applyFilters();
+}
+
 function toggleFilter(type){
-  if(type==='chords'){
-    chordsOnly=!chordsOnly;
-    localStorage.setItem('njp-chords-only',chordsOnly?'1':'0');
-    document.getElementById('chords-pill').classList.toggle('active',chordsOnly);
-    document.getElementById('tab-chords').classList.toggle('active',chordsOnly);
-  } else {
-    favOnly=!favOnly;
-    document.getElementById('fav-pill').classList.toggle('active',favOnly);
-    document.getElementById('tab-favs').classList.toggle('active',favOnly);
-  }
-  applyFilters();
+  if(type==='chords') setActiveTab(activeTab==='chords'?'songs':'chords');
+  else                setActiveTab(activeTab==='favs' ?'songs':'favs');
 }
 
 function updateCountBar(n){
@@ -680,25 +690,31 @@ function changeFont(d){fontSize=Math.max(13,Math.min(30,fontSize+d));localStorag
 // ── Navigation ──
 function showDetailView(){
   document.getElementById('detail-view').classList.add('show');
-  document.getElementById('tab-songs').classList.remove('active');
+  // Don't change tab active state — keep it so back restores correctly
 }
 function goBack(){
   document.getElementById('detail-view').classList.remove('show');
-  document.getElementById('tab-songs').classList.add('active');
   releaseWakeLock();
+  // Restore the tab that was active before opening the song
+  document.getElementById('tab-songs').classList.toggle('active', activeTab==='songs');
+  document.getElementById('tab-chords').classList.toggle('active', activeTab==='chords');
+  document.getElementById('tab-favs').classList.toggle('active', activeTab==='favs');
   history.back();
 }
 function goHome(){
   document.getElementById('detail-view').classList.remove('show');
-  document.getElementById('tab-songs').classList.add('active');
   releaseWakeLock();
+  setActiveTab('songs');
 }
 
 window.addEventListener('popstate',e=>{
   if(!e.state?.songId){
     document.getElementById('detail-view').classList.remove('show');
-    document.getElementById('tab-songs').classList.add('active');
     releaseWakeLock();
+    // Restore correct tab — don't blindly force Songs tab
+    document.getElementById('tab-songs').classList.toggle('active', activeTab==='songs');
+    document.getElementById('tab-chords').classList.toggle('active', activeTab==='chords');
+    document.getElementById('tab-favs').classList.toggle('active', activeTab==='favs');
   }
 });
 
