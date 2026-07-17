@@ -204,7 +204,7 @@ body{
   .search-wrap{padding-bottom:10px}
 }
 
-.detail-inner{padding:18px 18px calc(var(--nav-h) + var(--safe-b) + 74px)}
+.detail-inner{padding:18px 18px calc(var(--nav-h) + var(--safe-b) + 16px)}
 .back-btn{
   display:flex;align-items:center;gap:6px;
   background:none;border:none;color:var(--accent);font-size:14px;
@@ -441,42 +441,6 @@ body{
 .sl-btn{width:30px;height:30px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
 .sl-btn:active{background:var(--border)}
 .sl-btn:disabled{opacity:.3;cursor:default}
-
-/* ── Scale Key Bar ── */
-#scale-bar{
-  position:fixed;bottom:calc(var(--nav-h) + var(--safe-b));left:0;right:0;
-  height:58px;z-index:28;
-  background:var(--surface);border-top:1px solid var(--border);
-  display:flex;align-items:center;gap:10px;padding:0 10px 0 12px;
-  box-shadow:0 -4px 16px rgba(0,0,0,.18);
-  transform:translateY(0);transition:transform .25s cubic-bezier(.4,0,.2,1),opacity .25s;
-}
-#scale-bar.hidden{transform:translateY(100%);opacity:0;pointer-events:none}
-.scale-lbl{flex-shrink:0;min-width:58px}
-.scale-lbl-key{font-size:11.5px;font-weight:700;color:var(--accent);white-space:nowrap}
-.scale-lbl-hint{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-top:1px}
-.scale-kb-wrap{flex:1;position:relative;height:42px;overflow:hidden;border-radius:6px}
-.skb-w{
-  position:absolute;bottom:0;border-radius:0 0 4px 4px;
-  border:1px solid var(--border);background:var(--surface2);
-  transition:background .15s;
-}
-.skb-b{
-  position:absolute;bottom:0;border-radius:0 0 3px 3px;z-index:2;
-  background:#1e1b4b;border:1px solid #111;
-  transition:background .15s;
-}
-:root[data-theme="light"] .skb-b{background:#2d2060}
-.skb-w.in-scale{background:rgba(129,140,248,.35);border-color:var(--accent)}
-.skb-b.in-scale{background:rgba(99,102,241,.7);border-color:var(--accent)}
-.skb-w.is-root{background:var(--accent) !important;border-color:var(--accent)}
-.skb-b.is-root{background:var(--chord) !important;border-color:var(--chord)}
-.scale-note-label{
-  position:absolute;bottom:2px;left:50%;transform:translateX(-50%);
-  font-size:7px;color:var(--text2);font-weight:700;pointer-events:none;white-space:nowrap;
-}
-.skb-w.in-scale .scale-note-label{color:var(--accent)}
-.skb-w.is-root .scale-note-label{color:#fff}
 
 /* scrollbars */
 ::-webkit-scrollbar{width:4px}
@@ -1417,15 +1381,6 @@ body{
   </nav>
 </div>
 
-<!-- Scale Key Visualizer Bar -->
-<div id="scale-bar" class="hidden">
-  <div class="scale-lbl">
-    <div class="scale-lbl-key" id="scale-lbl-key">C Major</div>
-    <div class="scale-lbl-hint">Scale Keys</div>
-  </div>
-  <div class="scale-kb-wrap" id="scale-kb-wrap"><!-- rendered by JS --></div>
-</div>
-
 <!-- Set list bottom sheet -->
 <div id="setlist-sheet">
   <div class="sheet-backdrop" onclick="closeSetlistSheet()"></div>
@@ -1763,7 +1718,6 @@ function renderDetail(song){
   const num = song.num || song.n || '';
   const key = song.key || song.k || '';
   const hasChords = !!(song.chords && song.chord_lyrics);
-  updateScaleBar(key);
   const isFav = favs.has(id);
   const inSet = setlist.includes(id);
 
@@ -1956,7 +1910,6 @@ function showDetailView(){
 }
 function goBack(){
   document.getElementById('detail-view').classList.remove('show');
-  document.getElementById('scale-bar').classList.add('hidden');
   // Restore the tab that was active before opening the song
   document.getElementById('tab-songs').classList.toggle('active', activeTab==='songs');
   document.getElementById('tab-chords').classList.toggle('active', activeTab==='chords');
@@ -1983,7 +1936,6 @@ window.addEventListener('popstate',e=>{
   // Back within songs (closing detail view)
   if(!e.state?.songId){
     document.getElementById('detail-view').classList.remove('show');
-    document.getElementById('scale-bar').classList.add('hidden');
     // Restore correct tab — don't blindly force Songs tab
     document.getElementById('tab-songs').classList.toggle('active', activeTab==='songs');
     document.getElementById('tab-chords').classList.toggle('active', activeTab==='chords');
@@ -2972,73 +2924,6 @@ async function fetchChapter(translation, bookIdx, ch){
   try{ localStorage.setItem(key, JSON.stringify(data)); }catch(e){}
   return data;
 }
-
-// ── Scale Key Visualizer ─────────────────────────────────────────────────
-(function(){
-  const NOTES    = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-  const NOTE_IDX = {C:0,'C#':1,Db:1,D:2,'D#':3,Eb:3,E:4,F:5,'F#':6,Gb:6,G:7,'G#':8,Ab:8,A:9,'A#':10,Bb:10,B:11};
-  const INTERVALS = {
-    major:[0,2,4,5,7,9,11], minor:[0,2,3,5,7,8,10],
-    'harmonic minor':[0,2,3,5,7,8,11],
-    pentatonic:[0,2,4,7,9], 'minor pentatonic':[0,3,5,7,10]
-  };
-  // White key note indices (2 octaves): C D E F G A B C D E F G A B
-  const WHITE = [0,2,4,5,7,9,11, 0,2,4,5,7,9,11];
-  const WHITE_NAMES = ['C','D','E','F','G','A','B','C','D','E','F','G','A','B'];
-  // Black key positions (as fractional index between white keys, per octave)
-  // C#=0.6, D#=1.6, F#=3.6, G#=4.6, A#=5.6 → repeat for oct2 with +7
-  const BLACK_DEF = [
-    {p:0.62,n:1},{p:1.62,n:3},{p:3.62,n:6},{p:4.62,n:8},{p:5.62,n:10},
-    {p:7.62,n:1},{p:8.62,n:3},{p:10.62,n:6},{p:11.62,n:8},{p:12.62,n:10}
-  ];
-  const BLACK_NAMES = ['C#','D#','F#','G#','A#','C#','D#','F#','G#','A#'];
-
-  window.updateScaleBar = function(keyStr){
-    const bar = document.getElementById('scale-bar');
-    const kb  = document.getElementById('scale-kb-wrap');
-    if(!keyStr){ bar.classList.add('hidden'); return; }
-
-    // Parse key string e.g. "D Major", "A Minor", "G# Harmonic Minor"
-    const clean = keyStr.replace(/[🎵🎶]/g,'').trim();
-    const words = clean.split(/\s+/);
-    const root  = words[0];
-    const type  = words.slice(1).join(' ').toLowerCase() || 'major';
-    const rootIdx = NOTE_IDX[root];
-    if(rootIdx === undefined){ bar.classList.add('hidden'); return; }
-
-    const intervals = INTERVALS[type] || INTERVALS.major;
-    const scaleSet  = new Set(intervals.map(i=>(rootIdx+i)%12));
-
-    document.getElementById('scale-lbl-key').textContent = clean || keyStr;
-
-    // Render keyboard
-    const total = 14; // white keys
-    const wPct  = 100/total;
-    const bW    = wPct * 0.65;
-    let html = '';
-
-    // White keys
-    WHITE.forEach((note,i)=>{
-      const inScale = scaleSet.has(note);
-      const isRoot  = note === rootIdx;
-      const cls = `skb-w${inScale?' in-scale':''}${isRoot?' is-root':''}`;
-      const lbl = (isRoot || inScale) ? `<span class="scale-note-label">${WHITE_NAMES[i]}</span>` : '';
-      html += `<div class="${cls}" style="left:${i*wPct}%;width:${wPct-0.4}%;height:100%;top:0;"></div>`;
-    });
-
-    // Black keys
-    BLACK_DEF.forEach((bk,i)=>{
-      const inScale = scaleSet.has(bk.n);
-      const isRoot  = bk.n === rootIdx;
-      const cls = `skb-b${inScale?' in-scale':''}${isRoot?' is-root':''}`;
-      const left = bk.p * wPct;
-      html += `<div class="${cls}" style="left:${left.toFixed(2)}%;width:${bW.toFixed(2)}%;height:65%;top:0;"></div>`;
-    });
-
-    kb.innerHTML = html;
-    bar.classList.remove('hidden');
-  };
-})();
 
 // ── Bible Word Search ────────────────────────────────────────────────────
 const _tamBookCache = {}; // in-memory cache: bookIdx → bookData
