@@ -1174,6 +1174,22 @@ function saveFavs(){localStorage.setItem('njp-favs',JSON.stringify([...favs]))}
 function saveSetlist(){localStorage.setItem('njp-setlist',JSON.stringify(setlist));updateSetBadge()}
 function applyFontSize(){document.documentElement.style.setProperty('--lyric-size',fontSize+'px')}
 
+// ── Theme vars must be before boot so applyTheme() can use them ──
+const THEME_VARS = {
+  dark:{
+    '--bg':'#0a0918','--surface':'#13112b','--surface2':'#1c1940',
+    '--border':'#2a2660','--text':'#f0eeff','--text2':'#9b96cc',
+    '--accent':'#818cf8','--chord':'#fb923c','--key-bg':'#0d2e1f',
+    '--key-text':'#34d399','--fav':'#fbbf24',
+  },
+  light:{
+    '--bg':'#f5f3ff','--surface':'#ffffff','--surface2':'#ede9fe',
+    '--border':'#c4b5fd','--text':'#1e1b4b','--text2':'#6d5ac4',
+    '--accent':'#4f46e5','--chord':'#ea580c','--key-bg':'#d1fae5',
+    '--key-text':'#059669','--fav':'#d97706',
+  }
+};
+
 // ── Boot: load index first, then full data ──
 (function boot(){
   applyTheme(localStorage.getItem('njp-theme')||'dark');
@@ -1682,20 +1698,6 @@ window.addEventListener('popstate',e=>{
 })();
 
 // ── Theme ──
-const THEME_VARS = {
-  dark:{
-    '--bg':'#0a0918','--surface':'#13112b','--surface2':'#1c1940',
-    '--border':'#2a2660','--text':'#f0eeff','--text2':'#9b96cc',
-    '--accent':'#818cf8','--chord':'#fb923c','--key-bg':'#0d2e1f',
-    '--key-text':'#34d399','--fav':'#fbbf24',
-  },
-  light:{
-    '--bg':'#f5f3ff','--surface':'#ffffff','--surface2':'#ede9fe',
-    '--border':'#c4b5fd','--text':'#1e1b4b','--text2':'#6d5ac4',
-    '--accent':'#4f46e5','--chord':'#ea580c','--key-bg':'#d1fae5',
-    '--key-text':'#059669','--fav':'#d97706',
-  }
-};
 function applyTheme(t){
   const root = document.documentElement;
   root.setAttribute('data-theme', t);
