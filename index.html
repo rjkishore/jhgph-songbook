@@ -790,16 +790,9 @@ body{
 
 /* ─────────── UI/UX Polish Layer ─────────── */
 
-/* Home screen – entry animation */
-@keyframes home-rise{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
-@keyframes home-card-pop{from{opacity:0;transform:scale(.88) translateY(16px)}to{opacity:1;transform:none}}
-#home-screen:not(.hidden) .home-logo{animation:home-rise .45s cubic-bezier(.2,0,.2,1) both}
-#home-screen:not(.hidden) .home-greeting{animation:home-rise .45s .07s cubic-bezier(.2,0,.2,1) both}
-#home-screen:not(.hidden) .home-app-title{animation:home-rise .45s .1s cubic-bezier(.2,0,.2,1) both}
-#home-screen:not(.hidden) .home-app-sub{animation:home-rise .45s .13s cubic-bezier(.2,0,.2,1) both}
-#home-screen:not(.hidden) .home-cards{animation:home-rise .45s .2s cubic-bezier(.2,0,.2,1) both}
-#home-screen:not(.hidden) .home-card:nth-child(1){animation:home-card-pop .4s .28s both}
-#home-screen:not(.hidden) .home-card:nth-child(2){animation:home-card-pop .4s .36s both}
+/* Home screen – gentle fade-in only (no delay so cards are always visible) */
+@keyframes home-rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+#home-screen:not(.hidden){animation:home-rise .35s cubic-bezier(.2,0,.2,1) both}
 
 /* Home greeting */
 .home-greeting{font-size:18px;font-weight:600;color:#fff;letter-spacing:.3px;margin-bottom:-6px}
@@ -2669,12 +2662,12 @@ function showUpdateBanner(newSW){
 // ── Mode switching (Home / Songs / Bible) ──
 // ══════════════════════════════════════════════════════
 function getGreeting(){
-  const h = new Date().getHours();
-  if(h < 5)  return 'இரவு வணக்கம்! 🌙';
-  if(h < 12) return 'காலை வணக்கம்! 🌅';
-  if(h < 17) return 'மதிய வணக்கம்! ☀️';
-  if(h < 21) return 'மாலை வணக்கம்! 🌇';
-  return 'இரவு வணக்கம்! 🌙';
+  var h = new Date().getHours();
+  if(h < 5)  return 'இரவு வணக்கம்!';
+  if(h < 12) return 'காலை வணக்கம்!';
+  if(h < 17) return 'மதிய வணக்கம்!';
+  if(h < 21) return 'மாலை வணக்கம்!';
+  return 'இரவு வணக்கம்!';
 }
 function showHomeScreen(){
   document.getElementById('home-screen').classList.remove('hidden');
