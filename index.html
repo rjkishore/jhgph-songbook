@@ -552,6 +552,24 @@ body{
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 .bible-fav-verse{color:var(--fav);font-size:14px;cursor:pointer}
+/* ── Bible language bar ── */
+.bible-lang-bar{
+  display:flex;gap:6px;padding:8px 14px 6px;
+  background:rgba(0,0,0,.15);
+}
+.bible-lang-btn{
+  flex:1;padding:7px 4px;border-radius:10px;font-size:12px;font-weight:600;text-align:center;
+  background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);
+  cursor:pointer;font-family:inherit;transition:all .15s;-webkit-tap-highlight-color:transparent;
+}
+.bible-lang-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+:root[data-theme="light"] .bible-lang-bar{background:rgba(0,0,0,.08);}
+:root[data-theme="light"] .bible-lang-btn{border-color:rgba(0,0,0,.2);color:rgba(0,0,0,.6);}
+/* Both mode: english sub-text under Tamil */
+.bible-vtext-en{
+  display:block;font-size:12px;color:var(--text2);margin-top:4px;
+  font-style:italic;line-height:1.5;
+}
 
 /* ── Piano Tutorial ── */
 #piano-view{
@@ -801,6 +819,11 @@ body{
       <span class="bible-hdr-title" id="bible-hdr-title">📖 பரிசுத்த வேதாகமம்</span>
       <button class="hdr-btn" id="bible-theme-btn" title="Theme">🌙</button>
       <button class="hdr-btn" id="bible-fav-btn" title="Saved verses" onclick="openBibleFavs()" style="display:none">★</button>
+    </div>
+    <div class="bible-lang-bar">
+      <button class="bible-lang-btn active" id="blb-tamil" onclick="setBibleLang('tamil')">தமிழ்</button>
+      <button class="bible-lang-btn" id="blb-english" onclick="setBibleLang('english')">English (KJV)</button>
+      <button class="bible-lang-btn" id="blb-both" onclick="setBibleLang('both')">இரண்டும் / Both</button>
     </div>
   </div>
   <div class="bible-content" id="bible-content">
@@ -2611,14 +2634,26 @@ let bibleFavs = new Set(JSON.parse(localStorage.getItem('njp-bible-favs')||'[]')
 
 function saveBibleFavs(){ localStorage.setItem('njp-bible-favs', JSON.stringify([...bibleFavs])); }
 
-// Fetch chapter from API, cache in localStorage
-async function fetchBibleChapter(bookIdx, ch){
-  const key = `njp-bc-${bookIdx}-${ch}`;
+let bibleLang = localStorage.getItem('njp-bible-lang') || 'tamil';
+
+function setBibleLang(lang){
+  bibleLang = lang;
+  localStorage.setItem('njp-bible-lang', lang);
+  document.querySelectorAll('.bible-lang-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('blb-'+lang)?.classList.add('active');
+  // Re-render current chapter if one is open
+  if(bibleBookIdx >= 0 && bibleChapter > 0) renderBibleReader(bibleBookIdx, bibleChapter);
+}
+
+// Apply saved lang on init
+(function(){ document.getElementById('blb-'+bibleLang)?.classList.add('active');
+  document.querySelectorAll('.bible-lang-btn').forEach(b=>{ if(b.id!=='blb-'+bibleLang) b.classList.remove('active'); }); })();
+
+async function fetchChapter(translation, bookIdx, ch){
+  const key = `njp-bc-${translation}-${bookIdx}-${ch}`;
   const cached = localStorage.getItem(key);
   if(cached) return JSON.parse(cached);
-
-  // getbible.net Tamil Bible (OV translation = "tam")
-  const url = `https://api.getbible.net/v2/tam/${bookIdx+1}/${ch}.json`;
+  const url = `https://api.getbible.net/v2/${translation}/${bookIdx+1}/${ch}.json`;
   const r = await fetch(url);
   if(!r.ok) throw new Error('HTTP '+r.status);
   const data = await r.json();
@@ -2627,7 +2662,9 @@ async function fetchBibleChapter(bookIdx, ch){
 }
 
 function isCached(bookIdx, ch){
-  return !!localStorage.getItem(`njp-bc-${bookIdx}-${ch}`);
+  // считается cached if at least the Tamil version is cached
+  return !!localStorage.getItem(`njp-bc-tam-${bookIdx}-${ch}`) ||
+         !!localStorage.getItem(`njp-bc-${bookIdx}-${ch}`);
 }
 
 function setBibleTitle(txt){
@@ -2689,27 +2726,52 @@ async function renderBibleReader(bookIdx, ch){
   setBibleTitle(book.t+' '+ch);
   const el = document.getElementById('bible-content');
 
-  el.innerHTML = `
-    <button class="bible-back" onclick="renderBibleChapters(${bookIdx})">← ${book.t}</button>
-    <div class="bible-reader-title">${book.t} — அதிகாரம் ${ch}</div>
+  const backBtn = `<button class="bible-back" onclick="renderBibleChapters(${bookIdx})">← ${book.t}</button>`;
+  const title   = bibleLang==='english'
+    ? `<div class="bible-reader-title">${book.e} — Chapter ${ch}</div>`
+    : `<div class="bible-reader-title">${book.t} — அதிகாரம் ${ch}</div>`;
+
+  el.innerHTML = `${backBtn}${title}
     <div class="bible-loader"><div class="bible-spinner"></div>வசனங்கள் ஏற்றுகிறது...</div>`;
   el.scrollTop=0;
 
   try{
-    const data = await fetchBibleChapter(bookIdx, ch);
-    const verses = data.verses || [];
+    // Fetch what we need based on language selection
+    const needTamil   = bibleLang === 'tamil'   || bibleLang === 'both';
+    const needEnglish = bibleLang === 'english'  || bibleLang === 'both';
+
+    const [tamData, kjvData] = await Promise.all([
+      needTamil   ? fetchChapter('tam', bookIdx, ch) : Promise.resolve(null),
+      needEnglish ? fetchChapter('kjv', bookIdx, ch) : Promise.resolve(null),
+    ]);
+
+    const tamVerses = tamData?.verses || [];
+    const kjvVerses = kjvData?.verses || [];
+    // Build a map for quick kjv lookup
+    const kjvMap = {};
+    kjvVerses.forEach(v=>{ kjvMap[v.verse]=v.text||''; });
+
     const prevCh = ch>1?ch-1:null;
     const nextCh = ch<book.c?ch+1:null;
 
-    el.innerHTML = `
-      <button class="bible-back" onclick="renderBibleChapters(${bookIdx})">← ${book.t}</button>
-      <div class="bible-reader-title">${book.t} — அதிகாரம் ${ch}</div>
-      ${verses.map(v=>{
+    // Use Tamil verse list as base; for English-only use kjvVerses
+    const baseVerses = needTamil ? tamVerses : kjvVerses;
+
+    el.innerHTML = `${backBtn}${title}
+      ${baseVerses.map(v=>{
         const favKey = `${bookIdx}-${ch}-${v.verse}`;
-        const isFav = bibleFavs.has(favKey);
+        const isFav  = bibleFavs.has(favKey);
+        const tamTxt = escHtml(v.text||'');
+        const kjvTxt = escHtml(kjvMap[v.verse]||'');
+
+        let verseContent = '';
+        if(bibleLang === 'tamil')        verseContent = `<span class="bible-vtext">${tamTxt}</span>`;
+        else if(bibleLang === 'english') verseContent = `<span class="bible-vtext">${kjvTxt}</span>`;
+        else /* both */                  verseContent = `<span class="bible-vtext">${tamTxt}<span class="bible-vtext-en">${kjvTxt}</span></span>`;
+
         return `<div class="bible-verse ${isFav?'highlighted':''}" id="bv-${v.verse}">
           <span class="bible-vnum" onclick="toggleBibleFav('${favKey}',${v.verse})">${v.verse}</span>
-          <span class="bible-vtext">${escHtml(v.text||'')}</span>
+          ${verseContent}
         </div>`;
       }).join('')}
       <div class="bible-ch-nav">
@@ -2717,11 +2779,9 @@ async function renderBibleReader(bookIdx, ch){
         <button class="bible-ch-nav-btn" onclick="renderBibleChapters(${bookIdx})" style="flex:0.6;font-size:18px">☰</button>
         <button class="bible-ch-nav-btn" onclick="renderBibleReader(${bookIdx},${nextCh})" ${!nextCh?'disabled':''}>${nextCh||''} ›</button>
       </div>`;
-    // Mark this chapter button as cached
     document.querySelectorAll('.bible-ch-btn').forEach(b=>{ if(+b.textContent===ch) b.classList.add('cached'); });
   } catch(err){
-    el.innerHTML = `
-      <button class="bible-back" onclick="renderBibleChapters(${bookIdx})">← ${book.t}</button>
+    el.innerHTML = `${backBtn}
       <div class="bible-loader" style="color:var(--chord)">
         ⚠ இணைய இணைப்பு இல்லை<br>
         <span style="font-size:12px">Internet connection needed to read Bible. Already-read chapters work offline.</span>
