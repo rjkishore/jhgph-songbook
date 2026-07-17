@@ -1836,7 +1836,6 @@ function showDetailView(){
 }
 function goBack(){
   document.getElementById('detail-view').classList.remove('show');
-  releaseWakeLock();
   // Restore the tab that was active before opening the song
   document.getElementById('tab-songs').classList.toggle('active', activeTab==='songs');
   document.getElementById('tab-chords').classList.toggle('active', activeTab==='chords');
@@ -1845,7 +1844,6 @@ function goBack(){
 }
 function goHome(){
   document.getElementById('detail-view').classList.remove('show');
-  releaseWakeLock();
   setActiveTab('songs');
 }
 
@@ -1859,13 +1857,11 @@ window.addEventListener('popstate',e=>{
     document.getElementById('home-screen').classList.remove('hidden');
     document.getElementById('bible-view').classList.remove('show');
     document.getElementById('detail-view').classList.remove('show');
-    releaseWakeLock();
     return;
   }
   // Back within songs (closing detail view)
   if(!e.state?.songId){
     document.getElementById('detail-view').classList.remove('show');
-    releaseWakeLock();
     // Restore correct tab — don't blindly force Songs tab
     document.getElementById('tab-songs').classList.toggle('active', activeTab==='songs');
     document.getElementById('tab-chords').classList.toggle('active', activeTab==='chords');
@@ -2090,15 +2086,12 @@ function openSetlistSheet(){document.getElementById('setlist-sheet').classList.a
 // ── Piano Tutorial ──────────────────────────────────────────────────────────
 function openPiano(){
   document.getElementById('detail-view').classList.remove('show');
-  releaseWakeLock();
   setActiveTab('piano');
 }
 
 // ── Chord Tracker ──────────────────────────────────────────────────────────
 function openTracker(){
-  // Close detail view first so it doesn't overlap tracker
   document.getElementById('detail-view').classList.remove('show');
-  releaseWakeLock();
   setActiveTab('tracker');
 }
 
@@ -2601,13 +2594,19 @@ function shareSong(){
   navigator.share&&navigator.share({title,text:title+' — JHGPH Songbook'}).catch(()=>{});
 }
 
-// ── WakeLock ──
+// ── WakeLock – keep screen on while app is open ──
 async function acquireWakeLock(){
   if(!('wakeLock' in navigator))return;
   try{wakeLock=await navigator.wakeLock.request('screen')}catch(e){}
 }
 function releaseWakeLock(){if(wakeLock){wakeLock.release();wakeLock=null}}
-document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseWakeLock();else if(activeSong)acquireWakeLock()});
+// Re-acquire whenever the tab becomes visible again (browser releases it on hide)
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden) releaseWakeLock();
+  else acquireWakeLock();
+});
+// Acquire immediately on load
+acquireWakeLock();
 
 // ── Install prompt ──
 let deferredPrompt=null;
