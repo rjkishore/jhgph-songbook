@@ -923,6 +923,71 @@ body{
 .hdr-btn{min-width:40px;min-height:40px;border-radius:10px;transition:background .15s}
 .hdr-btn:active{background:rgba(255,255,255,.15)}
 
+/* ── Bible Word Search ── */
+#bible-search-panel{
+  flex-shrink:0;overflow:hidden;max-height:0;
+  transition:max-height .3s cubic-bezier(.4,0,.2,1);
+  background:var(--bg);
+}
+#bible-search-panel.open{max-height:100vh}
+.bsearch-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;border-bottom:1px solid var(--border);
+  background:var(--surface);
+}
+.bsearch-input{
+  flex:1;background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:12px;padding:9px 14px;font-size:15px;color:var(--text);
+  font-family:inherit;outline:none;-webkit-tap-highlight-color:transparent;
+}
+.bsearch-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(129,140,248,.2)}
+.bsearch-close{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:10px;padding:8px 12px;font-size:13px;color:var(--text2);
+  cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.bsearch-close:active{background:var(--border)}
+.bsearch-results{
+  overflow-y:auto;max-height:calc(100dvh - 180px);
+  overscroll-behavior:contain;
+}
+.bsearch-status{
+  padding:12px 16px;font-size:13px;color:var(--text2);
+  display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);
+}
+.bsearch-spinner{
+  width:16px;height:16px;border:2px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin .7s linear infinite;flex-shrink:0;
+}
+.bsearch-result{
+  padding:12px 16px;border-bottom:1px solid var(--border);
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:background .15s;
+}
+.bsearch-result:active{background:var(--surface2)}
+.bsearch-ref{
+  font-size:11px;font-weight:700;color:var(--accent);
+  margin-bottom:4px;letter-spacing:.3px;
+}
+.bsearch-text{font-size:14px;color:var(--text);line-height:1.5}
+.bsearch-text mark{
+  background:rgba(129,140,248,.3);color:var(--text);
+  border-radius:3px;padding:0 2px;font-style:normal;
+}
+:root[data-theme="light"] .bsearch-text mark{background:rgba(99,102,241,.2)}
+.bsearch-empty{
+  padding:40px 20px;text-align:center;color:var(--text2);font-size:14px;
+}
+.bsearch-progress{
+  height:3px;background:var(--border);
+}
+.bsearch-progress-bar{
+  height:100%;background:var(--grad);border-radius:0 2px 2px 0;
+  transition:width .2s;width:0%;
+}
+
 /* App header – tighter */
 .header-main{height:52px}
 
@@ -959,6 +1024,7 @@ body{
     <div class="bible-hdr-main">
       <button class="hdr-btn" onclick="showHomeScreen()" title="Home">🏠</button>
       <span class="bible-hdr-title" id="bible-hdr-title">📖 பரிசுத்த வேதாகமம்</span>
+      <button class="hdr-btn" onclick="openBibleSearch()" title="Search">🔍</button>
       <button class="hdr-btn" id="bible-theme-btn" title="Theme">🌙</button>
       <button class="hdr-btn" id="bible-fav-btn" title="Saved verses" onclick="openBibleFavs()" style="display:none">★</button>
       <div class="bible-font-ctrl">
@@ -972,6 +1038,21 @@ body{
       <button class="bible-lang-btn" id="blb-both" onclick="setBibleLang('both')">இரண்டும் / Both</button>
     </div>
   </div>
+  <!-- Bible Word Search Panel -->
+  <div id="bible-search-panel">
+    <div class="bsearch-bar">
+      <input class="bsearch-input" id="bsearch-input" type="search"
+        placeholder="வார்த்தை தேடுங்கள் / Search word..."
+        autocomplete="off" autocorrect="off" spellcheck="false"
+        oninput="onBibleSearchInput(this.value)">
+      <button class="bsearch-close" onclick="closeBibleSearch()">✕ மூடு</button>
+    </div>
+    <div class="bsearch-progress"><div class="bsearch-progress-bar" id="bsearch-progress-bar"></div></div>
+    <div class="bsearch-results" id="bsearch-results">
+      <div class="bsearch-empty">வார்த்தை உள்ளிடவும்<br><small>Type a word to search all 31,102 verses</small></div>
+    </div>
+  </div>
+
   <div class="bible-content" id="bible-content">
     <!-- filled by JS -->
   </div>
@@ -2844,6 +2925,119 @@ async function fetchChapter(translation, bookIdx, ch){
   return data;
 }
 
+// ── Bible Word Search ────────────────────────────────────────────────────
+const _tamBookCache = {}; // in-memory cache: bookIdx → bookData
+let _bsearchTimer = null;
+let _bsearchAbort = false;
+
+function openBibleSearch(){
+  const panel = document.getElementById('bible-search-panel');
+  panel.classList.add('open');
+  setTimeout(()=>document.getElementById('bsearch-input').focus(), 320);
+}
+function closeBibleSearch(){
+  _bsearchAbort = true;
+  document.getElementById('bible-search-panel').classList.remove('open');
+  document.getElementById('bsearch-input').value = '';
+}
+function onBibleSearchInput(val){
+  clearTimeout(_bsearchTimer);
+  _bsearchAbort = true;
+  if(!val.trim()){
+    document.getElementById('bsearch-results').innerHTML =
+      '<div class="bsearch-empty">வார்த்தை உள்ளிடவும்<br><small>Type a word to search all 31,102 verses</small></div>';
+    document.getElementById('bsearch-progress-bar').style.width='0%';
+    return;
+  }
+  _bsearchTimer = setTimeout(()=>runBibleSearch(val.trim()), 350);
+}
+async function runBibleSearch(query){
+  _bsearchAbort = false;
+  const resultsEl = document.getElementById('bsearch-results');
+  const progressBar = document.getElementById('bsearch-progress-bar');
+  const q = query.toLowerCase();
+  let count = 0;
+
+  resultsEl.innerHTML = `<div class="bsearch-status"><div class="bsearch-spinner"></div><span id="bsearch-status-txt">தேடுகிறது... 0 / 66</span></div>`;
+  progressBar.style.width = '0%';
+
+  const frag = document.createDocumentFragment();
+  const statusEl = ()=>document.getElementById('bsearch-status-txt');
+
+  for(let b=0; b<66; b++){
+    if(_bsearchAbort) return;
+
+    // Load book (use in-memory cache → localStorage book cache → network)
+    let bookData = _tamBookCache[b];
+    if(!bookData){
+      const lsKey = `njp-tb-${b}`;
+      const lsCached = localStorage.getItem(lsKey);
+      if(lsCached){
+        bookData = JSON.parse(lsCached);
+      } else {
+        try{
+          const r = await fetch(`./bible-tam/${b+1}.json`);
+          bookData = await r.json();
+          try{ localStorage.setItem(lsKey, JSON.stringify(bookData)); }catch(e){}
+        }catch(e){ continue; }
+      }
+      _tamBookCache[b] = bookData;
+    }
+
+    if(_bsearchAbort) return;
+
+    // Search all chapters and verses
+    for(const [chStr, verses] of Object.entries(bookData)){
+      for(const v of verses){
+        if(v.text.toLowerCase().includes(q)){
+          const book = BIBLE_BOOKS[b];
+          const ref = `${book.t} ${chStr}:${v.verse}`;
+          const engRef = `${book.e} ${chStr}:${v.verse}`;
+          const highlighted = v.text.replace(
+            new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi'),
+            m=>`<mark>${m}</mark>`
+          );
+          const div = document.createElement('div');
+          div.className = 'bsearch-result';
+          div.innerHTML = `<div class="bsearch-ref">${ref} <span style="color:var(--text2);font-weight:400">· ${engRef}</span></div><div class="bsearch-text">${highlighted}</div>`;
+          div.onclick = (()=>{
+            const bi=b, ch=parseInt(chStr), vn=v.verse;
+            return ()=>{ closeBibleSearch(); switchMode('bible'); renderBibleReader(bi, ch, vn); };
+          })();
+          resultsEl.appendChild(div);
+          count++;
+        }
+      }
+    }
+
+    // Update progress
+    const pct = Math.round((b+1)/66*100);
+    progressBar.style.width = pct+'%';
+    const st = statusEl();
+    if(st) st.textContent = `தேடுகிறது... ${b+1} / 66 (${count} முடிவு)`;
+
+    // Yield to browser every 3 books to keep UI responsive
+    if(b%3===2) await new Promise(r=>setTimeout(r,0));
+  }
+
+  if(_bsearchAbort) return;
+
+  // Replace status row with summary
+  const statusRow = resultsEl.querySelector('.bsearch-status');
+  if(statusRow) statusRow.remove();
+
+  if(count === 0){
+    resultsEl.innerHTML = `<div class="bsearch-empty">"${query}" — எந்த வசனத்திலும் கிடைக்கவில்லை<br><small>No verses found</small></div>`;
+  } else {
+    const summary = document.createElement('div');
+    summary.className = 'bsearch-status';
+    summary.style.cssText = 'color:var(--accent);font-weight:600;border-top:1px solid var(--border)';
+    summary.textContent = `${count} வசனங்கள் கிடைத்தன (${count} verses found)`;
+    resultsEl.insertBefore(summary, resultsEl.firstChild);
+  }
+  progressBar.style.width = '100%';
+}
+
 function isCached(bookIdx, ch){
   return !!localStorage.getItem(`njp-bc-tam-${bookIdx}-${ch}`) ||
          !!localStorage.getItem(`njp-bc-kjv-${bookIdx}-${ch}`) ||
@@ -2902,7 +3096,7 @@ function renderBibleChapters(bookIdx){
 }
 
 // ── Verse reader ──
-async function renderBibleReader(bookIdx, ch){
+async function renderBibleReader(bookIdx, ch, highlightVerse){
   bibleBookIdx = bookIdx;
   bibleChapter = ch;
   const book = BIBLE_BOOKS[bookIdx];
@@ -2969,6 +3163,13 @@ async function renderBibleReader(bookIdx, ch){
         <button class="bible-ch-nav-btn" onclick="renderBibleReader(${bookIdx},${nextCh})" ${!nextCh?'disabled':''}>${nextCh||''} ›</button>
       </div>`;
     document.querySelectorAll('.bible-ch-btn').forEach(b=>{ if(+b.textContent===ch) b.classList.add('cached'); });
+    // If opened from search, scroll to and highlight the target verse
+    if(highlightVerse){
+      setTimeout(()=>{
+        const vEl = document.getElementById('bv-'+highlightVerse);
+        if(vEl){ vEl.scrollIntoView({behavior:'smooth',block:'center'}); vEl.classList.add('highlighted'); }
+      }, 200);
+    }
   } catch(err){
     el.innerHTML = `${backBtn}
       <div class="bible-loader" style="color:var(--chord)">
