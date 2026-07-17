@@ -2516,13 +2516,15 @@ function showUpdateBanner(newSW){
 // ══════════════════════════════════════════════════════
 // ── Mode switching (Home / Songs / Bible) ──
 // ══════════════════════════════════════════════════════
-function showHomeScreen(pushState=true){
+function showHomeScreen(){
   document.getElementById('home-screen').classList.remove('hidden');
   document.getElementById('bible-view').classList.remove('show');
-  if(pushState) history.pushState({screen:'home'}, '');
+  document.getElementById('detail-view').classList.remove('show');
+  // Replace current history entry so back from home exits the app
+  history.replaceState({screen:'home'}, '');
 }
 
-function switchMode(mode, pushState=true){
+function switchMode(mode){
   localStorage.setItem('njp-mode', mode);
   document.getElementById('home-screen').classList.add('hidden');
   if(mode === 'bible'){
@@ -2531,21 +2533,14 @@ function switchMode(mode, pushState=true){
   } else {
     document.getElementById('bible-view').classList.remove('show');
   }
-  if(pushState) history.pushState({screen:mode}, '');
+  // Push so back button returns to home screen
+  history.pushState({screen:mode}, '');
 }
 
-// Called after splash hides — route to correct screen
+// Called after splash hides — always show home screen first
 function initMode(){
-  const saved = localStorage.getItem('njp-mode');
-  if(saved === 'bible'){
-    history.replaceState({screen:'home'}, '');
-    switchMode('bible');
-  } else if(saved === 'songs'){
-    history.replaceState({screen:'songs'}, '');
-  } else {
-    history.replaceState({screen:'home'}, '');
-    document.getElementById('home-screen').classList.remove('hidden');
-  }
+  history.replaceState({screen:'home'}, '');
+  document.getElementById('home-screen').classList.remove('hidden');
 }
 
 // Sync Bible theme button with songs theme
@@ -2650,8 +2645,9 @@ function setBibleLang(lang){
   document.querySelectorAll('.bible-lang-btn').forEach(b=>{ if(b.id!=='blb-'+bibleLang) b.classList.remove('active'); }); })();
 
 async function fetchChapter(translation, bookIdx, ch){
-  const key = `njp-bc-${translation}-${bookIdx}-${ch}`;
-  const cached = localStorage.getItem(key);
+  const key    = `njp-bc-${translation}-${bookIdx}-${ch}`;
+  const oldKey = `njp-bc-${bookIdx}-${ch}`; // legacy key from earlier version
+  const cached = localStorage.getItem(key) || (translation==='tam' ? localStorage.getItem(oldKey) : null);
   if(cached) return JSON.parse(cached);
   const url = `https://api.getbible.net/v2/${translation}/${bookIdx+1}/${ch}.json`;
   const r = await fetch(url);
@@ -2662,9 +2658,9 @@ async function fetchChapter(translation, bookIdx, ch){
 }
 
 function isCached(bookIdx, ch){
-  // считается cached if at least the Tamil version is cached
   return !!localStorage.getItem(`njp-bc-tam-${bookIdx}-${ch}`) ||
-         !!localStorage.getItem(`njp-bc-${bookIdx}-${ch}`);
+         !!localStorage.getItem(`njp-bc-kjv-${bookIdx}-${ch}`) ||
+         !!localStorage.getItem(`njp-bc-${bookIdx}-${ch}`); // legacy
 }
 
 function setBibleTitle(txt){
@@ -2737,13 +2733,19 @@ async function renderBibleReader(bookIdx, ch){
 
   try{
     // Fetch what we need based on language selection
-    const needTamil   = bibleLang === 'tamil'   || bibleLang === 'both';
-    const needEnglish = bibleLang === 'english'  || bibleLang === 'both';
+    const needTamil   = bibleLang === 'tamil'  || bibleLang === 'both';
+    const needEnglish = bibleLang === 'english' || bibleLang === 'both';
 
+    // Fetch independently so a missing KJV doesn't block Tamil (and vice versa)
     const [tamData, kjvData] = await Promise.all([
-      needTamil   ? fetchChapter('tam', bookIdx, ch) : Promise.resolve(null),
-      needEnglish ? fetchChapter('kjv', bookIdx, ch) : Promise.resolve(null),
+      needTamil   ? fetchChapter('tam', bookIdx, ch).catch(()=>null) : Promise.resolve(null),
+      needEnglish ? fetchChapter('kjv', bookIdx, ch).catch(()=>null) : Promise.resolve(null),
     ]);
+
+    // If BOTH failed (or whatever was needed failed), throw to show error
+    if(needTamil && needEnglish && !tamData && !kjvData) throw new Error('offline');
+    if(bibleLang==='tamil'   && !tamData) throw new Error('offline');
+    if(bibleLang==='english' && !kjvData) throw new Error('offline');
 
     const tamVerses = tamData?.verses || [];
     const kjvVerses = kjvData?.verses || [];
@@ -2783,8 +2785,13 @@ async function renderBibleReader(bookIdx, ch){
   } catch(err){
     el.innerHTML = `${backBtn}
       <div class="bible-loader" style="color:var(--chord)">
-        ⚠ இணைய இணைப்பு இல்லை<br>
-        <span style="font-size:12px">Internet connection needed to read Bible. Already-read chapters work offline.</span>
+        ⚠ இணையம் இல்லை / No internet<br>
+        <span style="font-size:13px;color:var(--text2);text-align:center;line-height:1.6">
+          இந்த அதிகாரம் முன்பு படிக்கவில்லை.<br>
+          This chapter hasn't been read before.<br><br>
+          <b>📖 Online-ல் ஒருமுறை படித்தால் Offline-லும் கிடைக்கும்.</b><br>
+          <small>Read once online → available forever offline.</small>
+        </span>
       </div>`;
   }
   el.scrollTop=0;
