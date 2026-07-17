@@ -1,6 +1,6 @@
 // NJP Songs — Service Worker (offline support)
 // Bump CACHE_VERSION whenever app files change to force an update.
-const CACHE_VERSION = 'njp-v26';
+const CACHE_VERSION = 'njp-v27';
 const SHELL = [
   './index.html',
   './manifest.json',
@@ -10,7 +10,15 @@ const SHELL = [
   './icon-maskable.png',
   './fonts/notosanstamil-tamil.woff2',
   './fonts/notosanstamil-latin.woff2',
-  './songs-index.json'
+  './songs-index.json',
+  './js/app.js',
+  './js/storage.js',
+  './js/navigation.js',
+  './js/ui.js',
+  './js/songs.js',
+  './js/bible.js',
+  './js/tracker.js',
+  './js/piano.js',
 ];
 const DATA = './songs.json';
 
