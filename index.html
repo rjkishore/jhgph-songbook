@@ -1035,6 +1035,12 @@ body{
 .tnote-text{font-size:14px;color:var(--text);line-height:1.75;flex:1}
 .tnote-remove{background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;opacity:.4;flex-shrink:0;padding:0 4px}
 .tnote-remove:active{opacity:1;color:#f87171}
+.tnote-share-btn{
+  background:var(--accent);color:#fff;border:none;
+  border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;
+  cursor:pointer;flex-shrink:0;
+}
+.tnote-share-btn:active{opacity:.8}
 
 /* Verse jump button inside reader title row */
 .vj-btn{
@@ -3568,9 +3574,10 @@ function openTopicDetail(topicId){
       </div>`).join('')
     : `<p style="color:var(--text2);font-size:13px">வசனங்கள் இல்லை.</p>`;
   el.innerHTML = `<button class="bible-back" onclick="openBibleNotes()">← குறிப்புகள்</button>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div class="bible-reader-title" style="margin:0">${escHtml(t.title)}</div>
-      <button onclick="deleteTopicNote('${topicId}')" style="background:none;border:none;color:#f87171;font-size:13px;cursor:pointer">🗑 Delete</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:8px">
+      <div class="bible-reader-title" style="margin:0;flex:1">${escHtml(t.title)}</div>
+      <button onclick="shareTopicNote('${topicId}')" class="tnote-share-btn">↗ Share</button>
+      <button onclick="deleteTopicNote('${topicId}')" style="background:none;border:none;color:#f87171;font-size:13px;cursor:pointer;flex-shrink:0">🗑</button>
     </div>
     ${verseHtml}`;
   el.scrollTop = 0;
@@ -3599,6 +3606,37 @@ function deleteTopicNote(topicId){
   saveBibleNotes();
   _refreshNotesBtnVisibility();
   openBibleNotes();
+}
+
+function shareTopicNote(topicId){
+  const t = bibleNotes[topicId];
+  if(!t) return;
+  const verses = t.verses || [];
+  const divider = '─────────────────────';
+
+  // Build plain-text format — WhatsApp/Messages friendly
+  let text = `📖 *${t.title}*\n${divider}\n\n`;
+  verses.forEach((v, i) => {
+    text += `${i+1}. *${v.ref}*\n`;
+    text += `   ${v.text}\n\n`;
+  });
+  text += `${divider}\n🎵 JHGPH Songbook`;
+
+  if(navigator.share){
+    navigator.share({
+      title: t.title,
+      text: text,
+    }).catch(()=>{});
+  } else {
+    // Fallback — copy to clipboard
+    navigator.clipboard?.writeText(text).then(()=>{
+      // Brief toast feedback
+      const btn = document.querySelector('.tnote-share-btn');
+      if(btn){ const orig=btn.textContent; btn.textContent='✓ Copied!'; setTimeout(()=>btn.textContent=orig, 2000); }
+    }).catch(()=>{
+      prompt('Copy this text:', text);
+    });
+  }
 }
 
 function applyUpdate(){
