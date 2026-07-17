@@ -2810,9 +2810,32 @@ function setBibleLang(lang){
 
 async function fetchChapter(translation, bookIdx, ch){
   const key    = `njp-bc-${translation}-${bookIdx}-${ch}`;
-  const oldKey = `njp-bc-${bookIdx}-${ch}`; // legacy key from earlier version
+  const oldKey = `njp-bc-${bookIdx}-${ch}`; // legacy
   const cached = localStorage.getItem(key) || (translation==='tam' ? localStorage.getItem(oldKey) : null);
   if(cached) return JSON.parse(cached);
+
+  if(translation === 'tam'){
+    // Tamil Bible is hosted locally (getbible.net dropped CORS for tam)
+    // Try book-level cache first (avoids re-fetching whole book per chapter)
+    const bookKey = `njp-tb-${bookIdx}`;
+    let bookData = null;
+    const bookCached = localStorage.getItem(bookKey);
+    if(bookCached){
+      bookData = JSON.parse(bookCached);
+    } else {
+      const r = await fetch(`./bible-tam/${bookIdx+1}.json`);
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      bookData = await r.json();
+      try{ localStorage.setItem(bookKey, JSON.stringify(bookData)); }catch(e){}
+    }
+    const verseArr = bookData[String(ch)];
+    if(!verseArr) throw new Error('Chapter not found');
+    const data = {verses: verseArr};
+    try{ localStorage.setItem(key, JSON.stringify(data)); }catch(e){}
+    return data;
+  }
+
+  // KJV and other translations — use getbible.net API
   const url = `https://api.getbible.net/v2/${translation}/${bookIdx+1}/${ch}.json`;
   const r = await fetch(url);
   if(!r.ok) throw new Error('HTTP '+r.status);
