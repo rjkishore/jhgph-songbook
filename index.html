@@ -445,6 +445,114 @@ body{
 /* scrollbars */
 ::-webkit-scrollbar{width:4px}
 
+/* ── Home / Mode chooser ── */
+#home-screen{
+  position:fixed;inset:0;z-index:300;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:20px;padding:32px 20px;
+  background:var(--grad);
+  transition:opacity .35s,visibility .35s;
+}
+#home-screen.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.home-logo{width:88px;height:88px;border-radius:24px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.home-app-title{font-size:26px;font-weight:700;color:#fff;letter-spacing:.5px;margin-bottom:0}
+.home-app-sub{font-size:13px;color:rgba(255,255,255,.78);margin-bottom:8px}
+.home-question{font-size:15px;font-weight:600;color:rgba(255,255,255,.9);margin-bottom:4px}
+.home-cards{display:flex;gap:14px;width:100%;max-width:330px}
+.home-card{
+  flex:1;padding:24px 10px 18px;border-radius:20px;text-align:center;cursor:pointer;
+  background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.22);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  transition:all .18s;-webkit-tap-highlight-color:transparent;
+}
+.home-card:active{transform:scale(.94);background:rgba(255,255,255,.26)}
+.home-card-icon{font-size:46px;margin-bottom:10px;line-height:1;display:block}
+.home-card-label{font-size:19px;font-weight:700;color:#fff;margin-bottom:4px}
+.home-card-sub{font-size:11px;color:rgba(255,255,255,.75);line-height:1.45}
+
+/* ── Bible view ── */
+#bible-view{
+  position:fixed;inset:0;z-index:200;background:var(--bg);
+  display:flex;flex-direction:column;
+  visibility:hidden;opacity:0;pointer-events:none;
+  transition:opacity .3s,visibility .3s;
+}
+#bible-view.show{visibility:visible;opacity:1;pointer-events:all}
+.bible-hdr{
+  flex-shrink:0;
+  background:linear-gradient(135deg,#1a0a3e 0%,#0f1040 50%,#0a1a40 100%);
+  border-bottom:1px solid rgba(129,140,248,.2);
+  padding:0 14px;padding-top:env(safe-area-inset-top,0);
+  box-shadow:0 2px 20px rgba(124,58,237,.25);
+}
+:root[data-theme="light"] .bible-hdr{background:var(--grad);border-bottom:none}
+.bible-hdr-main{height:56px;display:flex;align-items:center;gap:10px}
+.bible-hdr-title{
+  font-size:16px;font-weight:700;flex:1;
+  background:linear-gradient(90deg,#a5b4fc,#67e8f9);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+:root[data-theme="light"] .bible-hdr-title{background:linear-gradient(90deg,#fff,#e0f2fe);-webkit-background-clip:text;background-clip:text}
+.bible-content{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+.bible-back{
+  display:inline-flex;align-items:center;gap:5px;
+  background:none;border:none;color:var(--accent);font-size:14px;
+  cursor:pointer;padding:0;font-family:inherit;margin-bottom:14px;
+}
+.bible-section-lbl{
+  font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--text2);margin:14px 0 8px;
+  padding-bottom:5px;border-bottom:1px solid var(--border);
+}
+.bible-book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:7px;margin-bottom:8px}
+.bible-book-btn{
+  padding:10px 12px;border-radius:12px;cursor:pointer;
+  background:var(--surface);border:1px solid var(--border);
+  transition:all .15s;-webkit-tap-highlight-color:transparent;text-align:left;
+}
+.bible-book-btn:active{background:var(--surface2);transform:scale(.97)}
+.bible-book-name{font-size:13px;font-weight:600;color:var(--text)}
+.bible-book-meta{font-size:10px;color:var(--text2);margin-top:2px}
+.bible-ch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(50px,1fr));gap:8px;margin-bottom:20px}
+.bible-ch-btn{
+  padding:13px 4px;border-radius:10px;text-align:center;
+  font-size:16px;font-weight:700;color:var(--text);
+  background:var(--surface);border:1px solid var(--border);
+  cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;
+}
+.bible-ch-btn:active{background:var(--accent);color:#fff;border-color:transparent}
+.bible-ch-btn.cached{border-color:var(--accent);color:var(--accent)}
+.bible-reader-title{
+  font-size:19px;font-weight:700;margin-bottom:16px;
+  background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.bible-verse{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)}
+.bible-vnum{
+  font-size:11px;font-family:monospace;font-weight:700;color:var(--accent);
+  min-width:22px;flex-shrink:0;padding-top:3px;cursor:pointer;
+}
+.bible-vtext{font-size:17px;color:var(--text);line-height:1.8}
+.bible-verse.highlighted .bible-vtext{background:rgba(129,140,248,.15);border-radius:6px;padding:2px 6px}
+.bible-ch-nav{display:flex;gap:8px;margin-top:20px}
+.bible-ch-nav-btn{
+  flex:1;padding:11px;border-radius:12px;font-size:13px;text-align:center;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  cursor:pointer;font-family:inherit;transition:all .15s;-webkit-tap-highlight-color:transparent;
+}
+.bible-ch-nav-btn:disabled{opacity:.3;cursor:default}
+.bible-ch-nav-btn:active:not(:disabled){background:var(--border)}
+.bible-loader{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 20px;gap:16px;color:var(--text2);font-size:14px;
+}
+.bible-spinner{
+  width:38px;height:38px;border:3px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.bible-fav-verse{color:var(--fav);font-size:14px;cursor:pointer}
+
 /* ── Piano Tutorial ── */
 #piano-view{
   position:absolute;inset:0;background:var(--bg);
@@ -665,6 +773,41 @@ body{
 </head>
 <body>
 
+<!-- Home / Mode chooser -->
+<div id="home-screen" class="hidden">
+  <img class="home-logo" src="./logo.png" alt="">
+  <div class="home-app-title">JHGPH</div>
+  <div class="home-app-sub">என்ன திறக்க வேண்டும்?</div>
+  <div class="home-question">What would you like to open?</div>
+  <div class="home-cards">
+    <div class="home-card" onclick="switchMode('bible')">
+      <span class="home-card-icon">📖</span>
+      <div class="home-card-label">Bible</div>
+      <div class="home-card-sub">பரிசுத்த வேதாகமம்</div>
+    </div>
+    <div class="home-card" onclick="switchMode('songs')">
+      <span class="home-card-icon">🎵</span>
+      <div class="home-card-label">Songs</div>
+      <div class="home-card-sub">ஆராதனை பாடல்கள்</div>
+    </div>
+  </div>
+</div>
+
+<!-- Bible reader -->
+<div id="bible-view">
+  <div class="bible-hdr">
+    <div class="bible-hdr-main">
+      <button class="hdr-btn" onclick="showHomeScreen()" title="Home">🏠</button>
+      <span class="bible-hdr-title" id="bible-hdr-title">📖 பரிசுத்த வேதாகமம்</span>
+      <button class="hdr-btn" id="bible-theme-btn" title="Theme">🌙</button>
+      <button class="hdr-btn" id="bible-fav-btn" title="Saved verses" onclick="openBibleFavs()" style="display:none">★</button>
+    </div>
+  </div>
+  <div class="bible-content" id="bible-content">
+    <!-- filled by JS -->
+  </div>
+</div>
+
 <!-- Splash screen -->
 <div id="splash">
   <img src="./logo.png" alt="Logo">
@@ -678,7 +821,7 @@ body{
   <!-- Header -->
   <div class="app-header">
     <div class="header-main">
-      <img class="app-logo" src="./logo.png" alt="">
+      <button class="hdr-btn" onclick="showHomeScreen()" title="Home">🏠</button>
       <span class="app-title">JHGPH Songbook</span>
       <button class="hdr-btn" id="theme-btn" title="Theme">🌙</button>
       <button class="hdr-btn" id="install-btn" title="Install">⬇ Install</button>
@@ -1054,6 +1197,7 @@ function applyFontSize(){document.documentElement.style.setProperty('--lyric-siz
       setTimeout(()=>{
         document.getElementById('splash').classList.add('hidden');
         fill.style.width='100%';
+        initMode();
       },200);
 
       // Load full data in background for lyrics
@@ -2329,6 +2473,278 @@ function showUpdateBanner(newSW){
   `;
   document.body.appendChild(banner);
   window._pendingUpdate = newSW;
+}
+
+// ══════════════════════════════════════════════════════
+// ── Mode switching (Home / Songs / Bible) ──
+// ══════════════════════════════════════════════════════
+function showHomeScreen(){
+  document.getElementById('home-screen').classList.remove('hidden');
+  document.getElementById('bible-view').classList.remove('show');
+  // keep #app visible underneath so it's ready
+}
+
+function switchMode(mode){
+  localStorage.setItem('njp-mode', mode);
+  document.getElementById('home-screen').classList.add('hidden');
+  if(mode === 'bible'){
+    document.getElementById('bible-view').classList.add('show');
+    if(!window._bibleInited){ window._bibleInited=true; renderBibleBooks(); }
+  } else {
+    document.getElementById('bible-view').classList.remove('show');
+  }
+}
+
+// Called after splash hides — route to correct screen
+function initMode(){
+  const saved = localStorage.getItem('njp-mode');
+  if(saved === 'bible'){
+    switchMode('bible');
+  } else if(saved === 'songs'){
+    // stay on songs, home screen already hidden
+  } else {
+    document.getElementById('home-screen').classList.remove('hidden');
+  }
+}
+
+// Sync Bible theme button with songs theme
+document.getElementById('bible-theme-btn').addEventListener('click',()=>{
+  const t = (document.documentElement.getAttribute('data-theme')||'dark')==='dark'?'light':'dark';
+  applyTheme(t);
+  document.getElementById('bible-theme-btn').textContent = t==='light'?'☀️':'🌙';
+});
+
+// ══════════════════════════════════════════════════════
+// ── Bible Reader ──
+// ══════════════════════════════════════════════════════
+const BIBLE_BOOKS = [
+  // Tamil name, English abbr, chapters, section
+  {t:'ஆதியாகமம்',    e:'Genesis',         c:50,  s:'OT'},
+  {t:'யாத்திராகமம்', e:'Exodus',          c:40,  s:'OT'},
+  {t:'லேவியராகமம்',  e:'Leviticus',       c:27,  s:'OT'},
+  {t:'எண்ணாகமம்',    e:'Numbers',         c:36,  s:'OT'},
+  {t:'உபாகமம்',      e:'Deuteronomy',     c:34,  s:'OT'},
+  {t:'யோசுவா',       e:'Joshua',          c:24,  s:'OT'},
+  {t:'நியாயாதிபதிகள்',e:'Judges',         c:21,  s:'OT'},
+  {t:'ரூத்',         e:'Ruth',            c:4,   s:'OT'},
+  {t:'1 சாமுவேல்',   e:'1 Samuel',        c:31,  s:'OT'},
+  {t:'2 சாமுவேல்',   e:'2 Samuel',        c:24,  s:'OT'},
+  {t:'1 இராஜாக்கள்', e:'1 Kings',         c:22,  s:'OT'},
+  {t:'2 இராஜாக்கள்', e:'2 Kings',         c:25,  s:'OT'},
+  {t:'1 நாளாகமம்',   e:'1 Chronicles',    c:29,  s:'OT'},
+  {t:'2 நாளாகமம்',   e:'2 Chronicles',    c:36,  s:'OT'},
+  {t:'எஸ்றா',        e:'Ezra',            c:10,  s:'OT'},
+  {t:'நெகேமியா',     e:'Nehemiah',        c:13,  s:'OT'},
+  {t:'எஸ்தர்',       e:'Esther',          c:10,  s:'OT'},
+  {t:'யோபு',         e:'Job',             c:42,  s:'OT'},
+  {t:'சங்கீதம்',     e:'Psalms',          c:150, s:'OT'},
+  {t:'நீதிமொழிகள்',  e:'Proverbs',        c:31,  s:'OT'},
+  {t:'பிரசங்கி',     e:'Ecclesiastes',    c:12,  s:'OT'},
+  {t:'உன்னதப்பாட்டு',e:'Song of Solomon', c:8,   s:'OT'},
+  {t:'ஏசாயா',        e:'Isaiah',          c:66,  s:'OT'},
+  {t:'எரேமியா',      e:'Jeremiah',        c:52,  s:'OT'},
+  {t:'புலம்பல்',     e:'Lamentations',    c:5,   s:'OT'},
+  {t:'எசேக்கியேல்',  e:'Ezekiel',         c:48,  s:'OT'},
+  {t:'தானியேல்',     e:'Daniel',          c:12,  s:'OT'},
+  {t:'ஓசியா',        e:'Hosea',           c:14,  s:'OT'},
+  {t:'யோவேல்',       e:'Joel',            c:3,   s:'OT'},
+  {t:'ஆமோஸ்',        e:'Amos',            c:9,   s:'OT'},
+  {t:'ஒபதியா',       e:'Obadiah',         c:1,   s:'OT'},
+  {t:'யோனா',         e:'Jonah',           c:4,   s:'OT'},
+  {t:'மீகா',         e:'Micah',           c:7,   s:'OT'},
+  {t:'நாகூம்',       e:'Nahum',           c:3,   s:'OT'},
+  {t:'ஆபகூக்',       e:'Habakkuk',        c:3,   s:'OT'},
+  {t:'செப்பனியா',    e:'Zephaniah',       c:3,   s:'OT'},
+  {t:'ஆகாய்',        e:'Haggai',          c:2,   s:'OT'},
+  {t:'சகரியா',       e:'Zechariah',       c:14,  s:'OT'},
+  {t:'மலாக்கி',      e:'Malachi',         c:4,   s:'OT'},
+  {t:'மத்தேயு',      e:'Matthew',         c:28,  s:'NT'},
+  {t:'மாற்கு',       e:'Mark',            c:16,  s:'NT'},
+  {t:'லூக்கா',       e:'Luke',            c:24,  s:'NT'},
+  {t:'யோவான்',       e:'John',            c:21,  s:'NT'},
+  {t:'அப்போஸ்தலர்',  e:'Acts',            c:28,  s:'NT'},
+  {t:'ரோமர்',        e:'Romans',          c:16,  s:'NT'},
+  {t:'1 கொரிந்தியர்',e:'1 Corinthians',   c:16,  s:'NT'},
+  {t:'2 கொரிந்தியர்',e:'2 Corinthians',   c:13,  s:'NT'},
+  {t:'கலாத்தியர்',   e:'Galatians',       c:6,   s:'NT'},
+  {t:'எபேசியர்',     e:'Ephesians',       c:6,   s:'NT'},
+  {t:'பிலிப்பியர்',  e:'Philippians',     c:4,   s:'NT'},
+  {t:'கொலோசெயர்',   e:'Colossians',      c:4,   s:'NT'},
+  {t:'1 தெசலோனிக்கேயர்',e:'1 Thessalonians',c:5, s:'NT'},
+  {t:'2 தெசலோனிக்கேயர்',e:'2 Thessalonians',c:3, s:'NT'},
+  {t:'1 தீமோத்தேயு', e:'1 Timothy',       c:6,   s:'NT'},
+  {t:'2 தீமோத்தேயு', e:'2 Timothy',       c:4,   s:'NT'},
+  {t:'தீத்து',       e:'Titus',           c:3,   s:'NT'},
+  {t:'பிலேமோன்',     e:'Philemon',        c:1,   s:'NT'},
+  {t:'எபிரெயர்',     e:'Hebrews',         c:13,  s:'NT'},
+  {t:'யாக்கோபு',     e:'James',           c:5,   s:'NT'},
+  {t:'1 பேதுரு',     e:'1 Peter',         c:5,   s:'NT'},
+  {t:'2 பேதுரு',     e:'2 Peter',         c:3,   s:'NT'},
+  {t:'1 யோவான்',     e:'1 John',          c:5,   s:'NT'},
+  {t:'2 யோவான்',     e:'2 John',          c:1,   s:'NT'},
+  {t:'3 யோவான்',     e:'3 John',          c:1,   s:'NT'},
+  {t:'யூதா',         e:'Jude',            c:1,   s:'NT'},
+  {t:'வெளிப்படுத்தல்',e:'Revelation',     c:22,  s:'NT'},
+];
+
+let bibleBookIdx = -1;
+let bibleChapter = -1;
+let bibleFavs = new Set(JSON.parse(localStorage.getItem('njp-bible-favs')||'[]'));
+
+function saveBibleFavs(){ localStorage.setItem('njp-bible-favs', JSON.stringify([...bibleFavs])); }
+
+// Fetch chapter from API, cache in localStorage
+async function fetchBibleChapter(bookIdx, ch){
+  const key = `njp-bc-${bookIdx}-${ch}`;
+  const cached = localStorage.getItem(key);
+  if(cached) return JSON.parse(cached);
+
+  // getbible.net Tamil Bible (OV translation = "tam")
+  const url = `https://api.getbible.net/v2/tam/${bookIdx+1}/${ch}.json`;
+  const r = await fetch(url);
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const data = await r.json();
+  try{ localStorage.setItem(key, JSON.stringify(data)); }catch(e){}
+  return data;
+}
+
+function isCached(bookIdx, ch){
+  return !!localStorage.getItem(`njp-bc-${bookIdx}-${ch}`);
+}
+
+function setBibleTitle(txt){
+  document.getElementById('bible-hdr-title').textContent = '📖 '+txt;
+}
+
+// ── Book list ──
+function renderBibleBooks(){
+  bibleBookIdx=-1; bibleChapter=-1;
+  setBibleTitle('பரிசுத்த வேதாகமம்');
+  document.getElementById('bible-fav-btn').style.display = bibleFavs.size?'flex':'none';
+  const el = document.getElementById('bible-content');
+  const otBooks = BIBLE_BOOKS.filter(b=>b.s==='OT');
+  const ntBooks = BIBLE_BOOKS.filter(b=>b.s==='NT');
+
+  function bookGrid(books, offset){
+    return books.map((b,i)=>{
+      const idx = offset+i;
+      return `<div class="bible-book-btn" onclick="renderBibleChapters(${idx})">
+        <div class="bible-book-name">${b.t}</div>
+        <div class="bible-book-meta">${b.e} · ${b.c} ch</div>
+      </div>`;
+    }).join('');
+  }
+
+  el.innerHTML = `
+    <div class="bible-section-lbl">பழைய ஏற்பாடு — Old Testament (39 books)</div>
+    <div class="bible-book-grid">${bookGrid(otBooks,0)}</div>
+    <div class="bible-section-lbl">புதிய ஏற்பாடு — New Testament (27 books)</div>
+    <div class="bible-book-grid">${bookGrid(ntBooks,39)}</div>
+  `;
+  el.scrollTop=0;
+}
+
+// ── Chapter grid ──
+function renderBibleChapters(bookIdx){
+  bibleBookIdx = bookIdx;
+  const book = BIBLE_BOOKS[bookIdx];
+  setBibleTitle(book.t);
+  const el = document.getElementById('bible-content');
+  const chapters = Array.from({length:book.c},(_,i)=>i+1);
+  el.innerHTML = `
+    <button class="bible-back" onclick="renderBibleBooks()">← புத்தகங்கள்</button>
+    <div class="bible-section-lbl">${book.t} (${book.e}) — ${book.c} chapters</div>
+    <div class="bible-ch-grid">
+      ${chapters.map(ch=>`
+        <div class="bible-ch-btn ${isCached(bookIdx,ch)?'cached':''}"
+             onclick="renderBibleReader(${bookIdx},${ch})">${ch}</div>
+      `).join('')}
+    </div>`;
+  el.scrollTop=0;
+}
+
+// ── Verse reader ──
+async function renderBibleReader(bookIdx, ch){
+  bibleBookIdx = bookIdx;
+  bibleChapter = ch;
+  const book = BIBLE_BOOKS[bookIdx];
+  setBibleTitle(book.t+' '+ch);
+  const el = document.getElementById('bible-content');
+
+  el.innerHTML = `
+    <button class="bible-back" onclick="renderBibleChapters(${bookIdx})">← ${book.t}</button>
+    <div class="bible-reader-title">${book.t} — அதிகாரம் ${ch}</div>
+    <div class="bible-loader"><div class="bible-spinner"></div>வசனங்கள் ஏற்றுகிறது...</div>`;
+  el.scrollTop=0;
+
+  try{
+    const data = await fetchBibleChapter(bookIdx, ch);
+    const verses = data.verses || [];
+    const prevCh = ch>1?ch-1:null;
+    const nextCh = ch<book.c?ch+1:null;
+
+    el.innerHTML = `
+      <button class="bible-back" onclick="renderBibleChapters(${bookIdx})">← ${book.t}</button>
+      <div class="bible-reader-title">${book.t} — அதிகாரம் ${ch}</div>
+      ${verses.map(v=>{
+        const favKey = `${bookIdx}-${ch}-${v.verse}`;
+        const isFav = bibleFavs.has(favKey);
+        return `<div class="bible-verse ${isFav?'highlighted':''}" id="bv-${v.verse}">
+          <span class="bible-vnum" onclick="toggleBibleFav('${favKey}',${v.verse})">${v.verse}</span>
+          <span class="bible-vtext">${escHtml(v.text||'')}</span>
+        </div>`;
+      }).join('')}
+      <div class="bible-ch-nav">
+        <button class="bible-ch-nav-btn" onclick="renderBibleReader(${bookIdx},${prevCh})" ${!prevCh?'disabled':''}>‹ ${prevCh||''}</button>
+        <button class="bible-ch-nav-btn" onclick="renderBibleChapters(${bookIdx})" style="flex:0.6;font-size:18px">☰</button>
+        <button class="bible-ch-nav-btn" onclick="renderBibleReader(${bookIdx},${nextCh})" ${!nextCh?'disabled':''}>${nextCh||''} ›</button>
+      </div>`;
+    // Mark this chapter button as cached
+    document.querySelectorAll('.bible-ch-btn').forEach(b=>{ if(+b.textContent===ch) b.classList.add('cached'); });
+  } catch(err){
+    el.innerHTML = `
+      <button class="bible-back" onclick="renderBibleChapters(${bookIdx})">← ${book.t}</button>
+      <div class="bible-loader" style="color:var(--chord)">
+        ⚠ இணைய இணைப்பு இல்லை<br>
+        <span style="font-size:12px">Internet connection needed to read Bible. Already-read chapters work offline.</span>
+      </div>`;
+  }
+  el.scrollTop=0;
+}
+
+// ── Verse favourites ──
+function toggleBibleFav(key, vNum){
+  if(bibleFavs.has(key)) bibleFavs.delete(key);
+  else bibleFavs.add(key);
+  saveBibleFavs();
+  const el = document.getElementById('bv-'+vNum);
+  if(el) el.classList.toggle('highlighted', bibleFavs.has(key));
+  document.getElementById('bible-fav-btn').style.display = bibleFavs.size?'flex':'none';
+}
+
+function openBibleFavs(){
+  setBibleTitle('Saved Verses');
+  const el = document.getElementById('bible-content');
+  if(!bibleFavs.size){
+    el.innerHTML=`<button class="bible-back" onclick="renderBibleBooks()">← Books</button>
+      <div class="bible-section-lbl">No saved verses yet</div>
+      <p style="color:var(--text2);font-size:13px">Tap the verse number while reading to save it.</p>`;
+    return;
+  }
+  el.innerHTML = `<button class="bible-back" onclick="renderBibleBooks()">← Books</button>
+    <div class="bible-section-lbl">★ Saved Verses (${bibleFavs.size})</div>` +
+    [...bibleFavs].map(key=>{
+      const [bi,ch,v] = key.split('-').map(Number);
+      const book = BIBLE_BOOKS[bi];
+      const cached = localStorage.getItem(`njp-bc-${bi}-${ch}`);
+      let text = '';
+      if(cached){ const d=JSON.parse(cached); const vv=d.verses?.find(x=>x.verse===v); text=vv?.text||''; }
+      return `<div class="bible-verse" onclick="renderBibleReader(${bi},${ch})">
+        <span class="bible-vnum" style="min-width:auto;white-space:nowrap">${book?.t} ${ch}:${v}</span>
+        <span class="bible-vtext" style="font-size:14px">${text?escHtml(text):'(tap to read)'}</span>
+      </div>`;
+    }).join('');
+  el.scrollTop=0;
 }
 
 function applyUpdate(){
