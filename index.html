@@ -787,6 +787,155 @@ body{
 .tracker-chord-val{font-size:16px;font-weight:700;color:var(--chord);font-family:'Consolas',monospace;width:56px}
 .tracker-chord-bar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
 .tracker-chord-bar-fill{height:100%;border-radius:2px;background:var(--chord);opacity:.5}
+
+/* ─────────── UI/UX Polish Layer ─────────── */
+
+/* Home screen – entry animation */
+@keyframes home-rise{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+@keyframes home-card-pop{from{opacity:0;transform:scale(.88) translateY(16px)}to{opacity:1;transform:none}}
+#home-screen:not(.hidden) .home-logo{animation:home-rise .45s cubic-bezier(.2,0,.2,1) both}
+#home-screen:not(.hidden) .home-greeting{animation:home-rise .45s .07s cubic-bezier(.2,0,.2,1) both}
+#home-screen:not(.hidden) .home-app-title{animation:home-rise .45s .1s cubic-bezier(.2,0,.2,1) both}
+#home-screen:not(.hidden) .home-app-sub{animation:home-rise .45s .13s cubic-bezier(.2,0,.2,1) both}
+#home-screen:not(.hidden) .home-cards{animation:home-rise .45s .2s cubic-bezier(.2,0,.2,1) both}
+#home-screen:not(.hidden) .home-card:nth-child(1){animation:home-card-pop .4s .28s both}
+#home-screen:not(.hidden) .home-card:nth-child(2){animation:home-card-pop .4s .36s both}
+
+/* Home greeting */
+.home-greeting{font-size:18px;font-weight:600;color:#fff;letter-spacing:.3px;margin-bottom:-6px}
+
+/* Better home logo */
+.home-logo{box-shadow:0 16px 48px rgba(0,0,0,.45),0 0 0 3px rgba(255,255,255,.18)}
+
+/* Better home cards */
+.home-card{
+  position:relative;overflow:hidden;
+  box-shadow:0 8px 32px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.18);
+}
+.home-card::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.12),transparent 60%);
+  pointer-events:none;
+}
+.home-card-icon{text-shadow:0 4px 16px rgba(0,0,0,.25);filter:drop-shadow(0 2px 8px rgba(0,0,0,.25))}
+
+/* Song list improvements */
+.song-item{padding:13px 16px;gap:12px}
+.song-num{
+  font-size:10px;font-family:monospace;min-width:30px;max-width:30px;height:22px;
+  flex-shrink:0;background:var(--surface2);border:1px solid var(--border);
+  border-radius:6px;display:flex;align-items:center;justify-content:center;
+  color:var(--accent);font-weight:700;letter-spacing:-.5px;
+}
+.song-title{font-size:15px;font-weight:500;line-height:1.35}
+.song-eng{font-size:11.5px;color:var(--text2);margin-top:3px}
+
+/* Song count bar */
+#song-count-bar{padding:8px 14px;border-bottom:1.5px solid var(--border)}
+.filter-pill{padding:5px 14px;border-radius:20px;font-size:12px;min-height:30px;display:inline-flex;align-items:center}
+
+/* Bible font size variable */
+:root{--bible-fs:17px}
+
+/* Bible verse improvements */
+.bible-vtext{font-size:var(--bible-fs);line-height:1.85;color:var(--text)}
+.bible-vtext-en{font-size:calc(var(--bible-fs) - 3px);line-height:1.6}
+.bible-verse{
+  padding:10px 0;gap:10px;
+  border-bottom:1px solid var(--border);
+  transition:background .15s;
+}
+.bible-verse:last-child{border-bottom:none}
+.bible-verse:active{background:var(--surface2);border-radius:8px;margin:0 -8px;padding:10px 8px}
+.bible-vnum{
+  font-size:10px;min-width:22px;width:22px;height:22px;border-radius:50%;
+  background:var(--surface2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:1px;
+}
+
+/* Bible font size controls */
+.bible-font-ctrl{display:flex;align-items:center;gap:2px}
+.bible-font-btn{
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+  color:#fff;border-radius:8px;padding:4px 9px;font-size:13px;font-weight:700;
+  cursor:pointer;font-family:inherit;line-height:1;-webkit-tap-highlight-color:transparent;
+  transition:background .15s;
+}
+.bible-font-btn:active{background:rgba(255,255,255,.3)}
+:root[data-theme="light"] .bible-font-btn{background:rgba(0,0,0,.12);border-color:rgba(0,0,0,.2);color:#fff}
+
+/* Bible lang bar – pill style */
+.bible-lang-bar{padding:8px 12px 10px;gap:8px}
+.bible-lang-btn{
+  border-radius:20px;font-size:12px;padding:7px 8px;
+  border:1.5px solid rgba(255,255,255,.25);
+}
+.bible-lang-btn.active{
+  background:rgba(255,255,255,.95);color:#4f46e5;border-color:transparent;
+  font-weight:700;box-shadow:0 2px 12px rgba(0,0,0,.2);
+}
+:root[data-theme="light"] .bible-lang-btn.active{background:#fff;color:#4f46e5}
+
+/* Bible book grid – better cards */
+.bible-book-btn{
+  padding:11px 12px;border-radius:14px;
+  background:var(--surface);border:1.5px solid var(--border);
+}
+.bible-book-name{font-size:13.5px;font-weight:600}
+.bible-book-meta{font-size:10.5px;color:var(--text2);margin-top:3px}
+
+/* Bible chapter buttons – more tappable */
+.bible-ch-btn{
+  padding:14px 4px;border-radius:12px;font-size:17px;font-weight:700;
+  min-height:52px;
+}
+.bible-ch-btn.cached{
+  background:rgba(129,140,248,.1);
+  border-color:var(--accent);color:var(--accent);
+  box-shadow:inset 0 0 0 1px rgba(129,140,248,.3);
+}
+
+/* Bible reader title */
+.bible-reader-title{font-size:21px;margin-bottom:18px}
+
+/* Bible chapter nav */
+.bible-ch-nav-btn{
+  padding:13px;border-radius:14px;font-size:14px;font-weight:500;
+}
+
+/* Bottom nav – better active state */
+.nav-tab.active::after{
+  height:3px;left:25%;right:25%;
+  border-radius:2px 2px 0 0;
+  box-shadow:0 0 8px rgba(129,140,248,.6);
+}
+.nav-label{font-size:10.5px;letter-spacing:.2px}
+.nav-icon{font-size:21px}
+
+/* Smooth fade-in for bible-view show transition */
+#bible-view{transition:opacity .28s ease,visibility .28s ease}
+
+/* Better back-btn touch target */
+.back-btn{min-height:36px}
+
+/* Better search focus */
+#searchbox:focus{outline:none}
+.search-inner:focus-within{
+  box-shadow:0 0 0 2px var(--accent),0 4px 20px rgba(129,140,248,.25);
+  border-color:var(--accent);
+}
+
+/* hdr-btn touch area */
+.hdr-btn{min-width:40px;min-height:40px;border-radius:10px;transition:background .15s}
+.hdr-btn:active{background:rgba(255,255,255,.15)}
+
+/* App header – tighter */
+.header-main{height:52px}
+
+/* Detail view entrance animation */
+@keyframes slide-in-right{from{transform:translateX(100%)}to{transform:none}}
+#detail-view.show{animation:none}  /* native transform handles it */
 </style>
 </head>
 <body>
@@ -794,9 +943,9 @@ body{
 <!-- Home / Mode chooser -->
 <div id="home-screen" class="hidden">
   <img class="home-logo" src="./logo.png" alt="">
-  <div class="home-app-title">JHGPH</div>
+  <div class="home-greeting" id="home-greeting">வணக்கம்!</div>
+  <div class="home-app-title">JHGPH Songbook</div>
   <div class="home-app-sub">என்ன திறக்க வேண்டும்?</div>
-  <div class="home-question">What would you like to open?</div>
   <div class="home-cards">
     <div class="home-card" onclick="switchMode('bible')">
       <span class="home-card-icon">📖</span>
@@ -819,6 +968,10 @@ body{
       <span class="bible-hdr-title" id="bible-hdr-title">📖 பரிசுத்த வேதாகமம்</span>
       <button class="hdr-btn" id="bible-theme-btn" title="Theme">🌙</button>
       <button class="hdr-btn" id="bible-fav-btn" title="Saved verses" onclick="openBibleFavs()" style="display:none">★</button>
+      <div class="bible-font-ctrl">
+        <button class="bible-font-btn" onclick="changeBibleFont(-1)" title="Smaller">A−</button>
+        <button class="bible-font-btn" onclick="changeBibleFont(1)" title="Larger">A+</button>
+      </div>
     </div>
     <div class="bible-lang-bar">
       <button class="bible-lang-btn active" id="blb-tamil" onclick="setBibleLang('tamil')">தமிழ்</button>
@@ -2516,11 +2669,20 @@ function showUpdateBanner(newSW){
 // ══════════════════════════════════════════════════════
 // ── Mode switching (Home / Songs / Bible) ──
 // ══════════════════════════════════════════════════════
+function getGreeting(){
+  const h = new Date().getHours();
+  if(h < 5)  return 'இரவு வணக்கம்! 🌙';
+  if(h < 12) return 'காலை வணக்கம்! 🌅';
+  if(h < 17) return 'மதிய வணக்கம்! ☀️';
+  if(h < 21) return 'மாலை வணக்கம்! 🌇';
+  return 'இரவு வணக்கம்! 🌙';
+}
 function showHomeScreen(){
   document.getElementById('home-screen').classList.remove('hidden');
   document.getElementById('bible-view').classList.remove('show');
   document.getElementById('detail-view').classList.remove('show');
-  // Replace current history entry so back from home exits the app
+  const greet = document.getElementById('home-greeting');
+  if(greet) greet.textContent = getGreeting();
   history.replaceState({screen:'home'}, '');
 }
 
@@ -2540,7 +2702,10 @@ function switchMode(mode){
 // Called after splash hides — always show home screen first
 function initMode(){
   history.replaceState({screen:'home'}, '');
-  document.getElementById('home-screen').classList.remove('hidden');
+  const hs = document.getElementById('home-screen');
+  hs.classList.remove('hidden');
+  const greet = document.getElementById('home-greeting');
+  if(greet) greet.textContent = getGreeting();
 }
 
 // Sync Bible theme button with songs theme
@@ -2631,6 +2796,13 @@ function saveBibleFavs(){ localStorage.setItem('njp-bible-favs', JSON.stringify(
 
 let bibleLang = localStorage.getItem('njp-bible-lang') || 'tamil';
 
+let bibleFontSize = parseInt(localStorage.getItem('njp-bfs') || '17', 10);
+(function(){document.documentElement.style.setProperty('--bible-fs', bibleFontSize+'px')})();
+function changeBibleFont(delta){
+  bibleFontSize = Math.min(26, Math.max(13, bibleFontSize + delta));
+  localStorage.setItem('njp-bfs', bibleFontSize);
+  document.documentElement.style.setProperty('--bible-fs', bibleFontSize+'px');
+}
 function setBibleLang(lang){
   bibleLang = lang;
   localStorage.setItem('njp-bible-lang', lang);
