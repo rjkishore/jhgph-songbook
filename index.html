@@ -1674,6 +1674,19 @@ function goHome(){
 }
 
 window.addEventListener('popstate',e=>{
+  // Back from song detail
+  if(e.state?.songId){
+    return; // let the detail-view close naturally
+  }
+  // Back to home screen
+  if(e.state?.screen === 'home'){
+    document.getElementById('home-screen').classList.remove('hidden');
+    document.getElementById('bible-view').classList.remove('show');
+    document.getElementById('detail-view').classList.remove('show');
+    releaseWakeLock();
+    return;
+  }
+  // Back within songs (closing detail view)
   if(!e.state?.songId){
     document.getElementById('detail-view').classList.remove('show');
     releaseWakeLock();
@@ -2480,13 +2493,13 @@ function showUpdateBanner(newSW){
 // ══════════════════════════════════════════════════════
 // ── Mode switching (Home / Songs / Bible) ──
 // ══════════════════════════════════════════════════════
-function showHomeScreen(){
+function showHomeScreen(pushState=true){
   document.getElementById('home-screen').classList.remove('hidden');
   document.getElementById('bible-view').classList.remove('show');
-  // keep #app visible underneath so it's ready
+  if(pushState) history.pushState({screen:'home'}, '');
 }
 
-function switchMode(mode){
+function switchMode(mode, pushState=true){
   localStorage.setItem('njp-mode', mode);
   document.getElementById('home-screen').classList.add('hidden');
   if(mode === 'bible'){
@@ -2495,16 +2508,19 @@ function switchMode(mode){
   } else {
     document.getElementById('bible-view').classList.remove('show');
   }
+  if(pushState) history.pushState({screen:mode}, '');
 }
 
 // Called after splash hides — route to correct screen
 function initMode(){
   const saved = localStorage.getItem('njp-mode');
   if(saved === 'bible'){
+    history.replaceState({screen:'home'}, '');
     switchMode('bible');
   } else if(saved === 'songs'){
-    // stay on songs, home screen already hidden
+    history.replaceState({screen:'songs'}, '');
   } else {
+    history.replaceState({screen:'home'}, '');
     document.getElementById('home-screen').classList.remove('hidden');
   }
 }
