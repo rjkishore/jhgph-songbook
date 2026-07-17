@@ -935,6 +935,100 @@ body{
 .hdr-btn{min-width:40px;min-height:40px;border-radius:10px;transition:background .15s}
 .hdr-btn:active{background:rgba(255,255,255,.15)}
 
+/* ── Verse Jump Picker ── */
+#verse-picker{
+  position:fixed;bottom:0;left:0;right:0;z-index:210;
+  background:var(--surface);border-radius:20px 20px 0 0;
+  padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));
+  max-height:55vh;overflow-y:auto;
+  box-shadow:0 -6px 32px rgba(0,0,0,.35);
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.2,0,.2,1);
+}
+#verse-picker.open{transform:translateY(0)}
+.vp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.vp-title{font-size:15px;font-weight:700;color:var(--text)}
+.vp-close{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 12px;font-size:13px;color:var(--text2);cursor:pointer}
+.vp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:7px}
+.vp-btn{
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:10px 4px;font-size:13px;font-weight:600;color:var(--text);
+  cursor:pointer;text-align:center;position:relative;
+}
+.vp-btn:active{background:var(--accent);color:#fff;border-color:transparent}
+.vp-btn.has-note::after{
+  content:'';position:absolute;top:4px;right:4px;
+  width:5px;height:5px;border-radius:50%;background:var(--accent);
+}
+#verse-picker-backdrop{
+  position:fixed;inset:0;z-index:209;background:rgba(0,0,0,.45);
+  display:none;
+}
+#verse-picker-backdrop.open{display:block}
+
+/* ── Bible Note Modal ── */
+#note-modal{
+  position:fixed;inset:0;z-index:300;display:flex;align-items:flex-end;
+  background:rgba(0,0,0,.5);opacity:0;pointer-events:none;
+  transition:opacity .25s;
+}
+#note-modal.open{opacity:1;pointer-events:all}
+.note-box{
+  background:var(--surface);border-radius:20px 20px 0 0;
+  padding:20px 20px calc(24px + env(safe-area-inset-bottom,0px));
+  width:100%;max-height:88vh;overflow-y:auto;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.2,0,.2,1);
+  box-sizing:border-box;
+}
+#note-modal.open .note-box{transform:translateY(0)}
+.note-box-ref{font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px}
+.note-box-verse{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.65;max-height:80px;overflow:hidden}
+.note-inp{
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  border-radius:10px;padding:11px 14px;font-size:15px;color:var(--text);
+  margin-bottom:10px;box-sizing:border-box;outline:none;
+}
+.note-inp:focus{border-color:var(--accent)}
+textarea.note-inp{min-height:90px;resize:none;line-height:1.6;font-family:inherit}
+.note-inp::placeholder{color:var(--text2);opacity:.6}
+.note-actions{display:flex;gap:8px;margin-top:4px}
+.note-save-btn{
+  flex:1;background:var(--accent);color:#fff;border:none;
+  border-radius:10px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;
+}
+.note-del-btn{
+  background:var(--surface2);color:#f87171;border:1px solid var(--border);
+  border-radius:10px;padding:13px 16px;font-size:15px;cursor:pointer;
+}
+.note-cancel-btn{
+  background:var(--surface2);color:var(--text2);border:1px solid var(--border);
+  border-radius:10px;padding:13px 16px;font-size:15px;cursor:pointer;
+}
+
+/* Note icon on each verse */
+.bible-verse{position:relative}
+.vn-note-btn{
+  background:none;border:none;cursor:pointer;font-size:16px;
+  color:var(--text2);padding:2px 6px;opacity:.35;flex-shrink:0;line-height:1;
+  align-self:flex-start;margin-top:2px;
+}
+.vn-note-btn.has-note{opacity:1;color:var(--accent)}
+
+/* My Notes list */
+.note-item{padding:14px 0;border-bottom:1px solid var(--border);cursor:pointer;active:opacity:.7}
+.note-item:active{opacity:.7}
+.note-item-ref{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:4px;letter-spacing:.3px}
+.note-item-topic{font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px}
+.note-item-body{font-size:12px;color:var(--text2);line-height:1.5}
+
+/* Verse jump button inside reader title row */
+.vj-btn{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:5px 10px;font-size:12px;color:var(--text2);cursor:pointer;
+  margin-left:8px;vertical-align:middle;
+}
+.vj-btn:active{background:var(--accent);color:#fff;border-color:transparent}
+
 /* ── Bible Word Search ── */
 #bible-search-panel{
   flex-shrink:0;overflow:hidden;max-height:0;
@@ -1039,6 +1133,7 @@ body{
       <button class="hdr-btn" onclick="openBibleSearch()" title="Search">🔍</button>
       <button class="hdr-btn" id="bible-theme-btn" title="Theme">🌙</button>
       <button class="hdr-btn" id="bible-fav-btn" title="Saved verses" onclick="openBibleFavs()" style="display:none">★</button>
+      <button class="hdr-btn" id="bible-notes-btn" title="My Notes" onclick="openBibleNotes()" style="display:none">📝</button>
       <div class="bible-font-ctrl">
         <button class="bible-font-btn" onclick="changeBibleFont(-1)" title="Smaller">A−</button>
         <button class="bible-font-btn" onclick="changeBibleFont(1)" title="Larger">A+</button>
@@ -1067,6 +1162,31 @@ body{
 
   <div class="bible-content" id="bible-content">
     <!-- filled by JS -->
+  </div>
+
+  <!-- Verse Jump Picker -->
+  <div id="verse-picker-backdrop" onclick="closeVersePicker()"></div>
+  <div id="verse-picker">
+    <div class="vp-header">
+      <span class="vp-title">வசனத்திற்கு செல்க / Go to Verse</span>
+      <button class="vp-close" onclick="closeVersePicker()">✕ மூடு</button>
+    </div>
+    <div class="vp-grid" id="vp-grid"></div>
+  </div>
+
+  <!-- Note Modal -->
+  <div id="note-modal" onclick="closeNoteModal(event)">
+    <div class="note-box">
+      <div class="note-box-ref" id="note-modal-ref"></div>
+      <div class="note-box-verse" id="note-modal-verse"></div>
+      <input class="note-inp" id="note-topic-inp" type="text" placeholder="தலைப்பு / Topic (e.g. நம்பிக்கை, Grace...)">
+      <textarea class="note-inp" id="note-body-inp" placeholder="குறிப்பு / Note..."></textarea>
+      <div class="note-actions">
+        <button class="note-cancel-btn" onclick="closeNoteModal()">மூடு</button>
+        <button class="note-del-btn" id="note-del-btn" onclick="deleteNote()" style="display:none">🗑</button>
+        <button class="note-save-btn" onclick="saveNote()">💾 சேமி</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2894,7 +3014,10 @@ const BIBLE_BOOKS = [
 
 let bibleBookIdx = -1;
 let bibleChapter = -1;
+let _bibleVerseCount = 0;
 let bibleFavs = new Set(JSON.parse(localStorage.getItem('njp-bible-favs')||'[]'));
+let bibleNotes = JSON.parse(localStorage.getItem('njp-bible-notes')||'{}');
+function saveBibleNotes(){ localStorage.setItem('njp-bible-notes', JSON.stringify(bibleNotes)); }
 
 function saveBibleFavs(){ localStorage.setItem('njp-bible-favs', JSON.stringify([...bibleFavs])); }
 
@@ -3135,9 +3258,10 @@ async function renderBibleReader(bookIdx, ch, highlightVerse){
   const el = document.getElementById('bible-content');
 
   const backBtn = `<button class="bible-back" onclick="renderBibleChapters(${bookIdx})">← ${book.t}</button>`;
+  const vjBtn = `<button class="vj-btn" onclick="openVersePicker()">↓ Verse</button>`;
   const title   = bibleLang==='english'
-    ? `<div class="bible-reader-title">${book.e} — Chapter ${ch}</div>`
-    : `<div class="bible-reader-title">${book.t} — அதிகாரம் ${ch}</div>`;
+    ? `<div class="bible-reader-title">${book.e} — Chapter ${ch} ${vjBtn}</div>`
+    : `<div class="bible-reader-title">${book.t} — அதிகாரம் ${ch} ${vjBtn}</div>`;
 
   el.innerHTML = `${backBtn}${title}
     <div class="bible-loader"><div class="bible-spinner"></div>வசனங்கள் ஏற்றுகிறது...</div>`;
@@ -3183,9 +3307,13 @@ async function renderBibleReader(bookIdx, ch, highlightVerse){
         else if(bibleLang === 'english') verseContent = `<span class="bible-vtext">${kjvTxt}</span>`;
         else /* both */                  verseContent = `<span class="bible-vtext">${tamTxt}<span class="bible-vtext-en">${kjvTxt}</span></span>`;
 
+        const noteKey = `${bookIdx}-${ch}-${v.verse}`;
+        const hasNote = !!bibleNotes[noteKey];
+        const noteTxt = bibleLang==='english' ? kjvTxt : tamTxt;
         return `<div class="bible-verse ${isFav?'highlighted':''}" id="bv-${v.verse}">
           <span class="bible-vnum" onclick="toggleBibleFav('${favKey}',${v.verse})">${v.verse}</span>
           ${verseContent}
+          <button class="vn-note-btn ${hasNote?'has-note':''}" id="nb-${v.verse}" onclick="openNoteModal(${bookIdx},${ch},${v.verse},\`${noteTxt.replace(/`/g,"'")}\`)" title="Note">✏️</button>
         </div>`;
       }).join('')}
       <div class="bible-ch-nav">
@@ -3193,6 +3321,7 @@ async function renderBibleReader(bookIdx, ch, highlightVerse){
         <button class="bible-ch-nav-btn" onclick="renderBibleChapters(${bookIdx})" style="flex:0.6;font-size:18px">☰</button>
         <button class="bible-ch-nav-btn" onclick="renderBibleReader(${bookIdx},${nextCh})" ${!nextCh?'disabled':''}>${nextCh||''} ›</button>
       </div>`;
+    _bibleVerseCount = baseVerses.length;
     document.querySelectorAll('.bible-ch-btn').forEach(b=>{ if(+b.textContent===ch) b.classList.add('cached'); });
     // If opened from search, scroll to and highlight the target verse
     if(highlightVerse){
@@ -3249,6 +3378,121 @@ function openBibleFavs(){
       </div>`;
     }).join('');
   el.scrollTop=0;
+}
+
+// ── Verse Jump Picker ──
+function openVersePicker(){
+  if(_bibleVerseCount < 1) return;
+  const grid = document.getElementById('vp-grid');
+  grid.innerHTML = '';
+  for(let i=1; i<=_bibleVerseCount; i++){
+    const noteKey = `${bibleBookIdx}-${bibleChapter}-${i}`;
+    const btn = document.createElement('button');
+    btn.className = 'vp-btn' + (bibleNotes[noteKey] ? ' has-note' : '');
+    btn.textContent = i;
+    btn.onclick = ()=>{ jumpToVerse(i); closeVersePicker(); };
+    grid.appendChild(btn);
+  }
+  document.getElementById('verse-picker').classList.add('open');
+  document.getElementById('verse-picker-backdrop').classList.add('open');
+}
+function closeVersePicker(){
+  document.getElementById('verse-picker').classList.remove('open');
+  document.getElementById('verse-picker-backdrop').classList.remove('open');
+}
+function jumpToVerse(n){
+  const el = document.getElementById('bv-'+n);
+  if(!el) return;
+  el.scrollIntoView({behavior:'smooth', block:'center'});
+  el.style.transition='background .2s';
+  el.style.background='rgba(129,140,248,.22)';
+  setTimeout(()=>{ el.style.background=''; }, 1200);
+}
+
+// ── Bible Notes ──
+let _noteCtx = null; // {bookIdx, ch, verse, verseText}
+function openNoteModal(bookIdx, ch, verse, verseText){
+  _noteCtx = {bookIdx, ch, verse, verseText};
+  const key = `${bookIdx}-${ch}-${verse}`;
+  const existing = bibleNotes[key] || {};
+  const book = BIBLE_BOOKS[bookIdx];
+  const ref = (book ? book.t+' '+ch+':'+verse : ch+':'+verse);
+  document.getElementById('note-modal-ref').textContent = ref;
+  document.getElementById('note-modal-verse').textContent = verseText.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"');
+  document.getElementById('note-topic-inp').value = existing.topic || '';
+  document.getElementById('note-body-inp').value = existing.body || '';
+  document.getElementById('note-del-btn').style.display = existing.topic || existing.body ? 'block' : 'none';
+  document.getElementById('note-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('note-topic-inp').focus(), 350);
+}
+function closeNoteModal(e){
+  if(e && e.target !== document.getElementById('note-modal')) return;
+  document.getElementById('note-modal').classList.remove('open');
+  _noteCtx = null;
+}
+function saveNote(){
+  if(!_noteCtx) return;
+  const topic = document.getElementById('note-topic-inp').value.trim();
+  const body  = document.getElementById('note-body-inp').value.trim();
+  const key = `${_noteCtx.bookIdx}-${_noteCtx.ch}-${_noteCtx.verse}`;
+  if(topic || body){
+    bibleNotes[key] = {topic, body};
+  } else {
+    delete bibleNotes[key];
+  }
+  saveBibleNotes();
+  _syncNoteBtnState(key);
+  document.getElementById('bible-notes-btn').style.display = Object.keys(bibleNotes).length ? 'flex' : 'none';
+  document.getElementById('note-modal').classList.remove('open');
+  _noteCtx = null;
+}
+function deleteNote(){
+  if(!_noteCtx) return;
+  const key = `${_noteCtx.bookIdx}-${_noteCtx.ch}-${_noteCtx.verse}`;
+  delete bibleNotes[key];
+  saveBibleNotes();
+  _syncNoteBtnState(key);
+  document.getElementById('bible-notes-btn').style.display = Object.keys(bibleNotes).length ? 'flex' : 'none';
+  document.getElementById('note-modal').classList.remove('open');
+  _noteCtx = null;
+}
+function _syncNoteBtnState(key){
+  const hasNote = !!bibleNotes[key];
+  const verse = key.split('-')[2];
+  const btn = document.getElementById('nb-'+verse);
+  if(btn){ btn.classList.toggle('has-note', hasNote); }
+}
+(function(){ // Show notes btn on load if notes exist
+  if(Object.keys(bibleNotes).length)
+    setTimeout(()=>{ const b=document.getElementById('bible-notes-btn'); if(b) b.style.display='flex'; }, 500);
+})();
+
+// ── My Bible Notes view ──
+function openBibleNotes(){
+  setBibleTitle('📝 My Notes');
+  const el = document.getElementById('bible-content');
+  const keys = Object.keys(bibleNotes);
+  if(!keys.length){
+    el.innerHTML = `<button class="bible-back" onclick="renderBibleBooks()">← Books</button>
+      <div class="bible-section-lbl">No notes yet</div>
+      <p style="color:var(--text2);font-size:13px;line-height:1.6">வசனத்தில் உள்ள ✏️ button-ஐ தட்டவும்.<br>Tap the ✏️ icon on any verse to add a note.</p>`;
+    el.scrollTop = 0;
+    return;
+  }
+  const items = keys.map(key=>{
+    const [bi,ch,v] = key.split('-').map(Number);
+    const book = BIBLE_BOOKS[bi];
+    const n = bibleNotes[key];
+    return `<div class="note-item" onclick="renderBibleReader(${bi},${ch},${v})">
+      <div class="note-item-ref">${book?.t||''} ${ch}:${v}</div>
+      ${n.topic ? `<div class="note-item-topic">${escHtml(n.topic)}</div>` : ''}
+      ${n.body  ? `<div class="note-item-body">${escHtml(n.body)}</div>` : ''}
+    </div>`;
+  }).join('');
+  el.innerHTML = `<button class="bible-back" onclick="renderBibleBooks()">← Books</button>
+    <div class="bible-section-lbl">📝 My Notes (${keys.length})</div>
+    ${items}`;
+  el.scrollTop = 0;
 }
 
 function applyUpdate(){
