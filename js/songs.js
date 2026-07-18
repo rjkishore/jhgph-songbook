@@ -180,6 +180,16 @@ export function toggleFilter(type) {
   else                   setActiveTab(_activeTab === 'favs'   ? 'songs' : 'favs');
 }
 
+export function openTracker() {
+  document.getElementById('detail-view')?.classList.remove('show');
+  setActiveTab('tracker');
+}
+
+export function openPiano() {
+  document.getElementById('detail-view')?.classList.remove('show');
+  setActiveTab('piano');
+}
+
 function _updateCountBar(n) {
   const el = document.getElementById('song-count');
   if (el) el.textContent = `${n} / ${_index.length} பாடல்கள்`;

@@ -7,6 +7,7 @@ import { Nav }                                            from './navigation.js'
 import {
   init           as songsInit,
   applyFilters, scheduleFilter, invalidateList, setActiveTab, toggleFilter,
+  openTracker, openPiano,
   openSong, closeDetailView, renderDetail,
   renderLyrics, changeTranspose, toggleChordsVis, changeFont,
   toggleFav, toggleSetlist,
@@ -35,7 +36,7 @@ import { initPiano }   from './piano.js';
 // ── Expose all functions needed by inline HTML onclick="" ──────────────────
 Object.assign(window, {
   // songs
-  applyFilters, scheduleFilter, invalidateList, setActiveTab, toggleFilter,
+  applyFilters, scheduleFilter, invalidateList, setActiveTab, toggleFilter, openTracker, openPiano,
   openSong, renderLyrics, changeTranspose, toggleChordsVis, changeFont,
   toggleFav, toggleSetlist,
   openSetlistSheet, closeSetlistSheet, clearSetlist,
