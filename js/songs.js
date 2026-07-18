@@ -42,6 +42,10 @@ let _favs       = Storage.songs.getFavs();
 let _setlist    = Storage.songs.getSetlist();
 let _foundChordsData = null;
 
+// ── Virtual scroll ─────────────────────────────────────────────────────────
+const ITEM_H   = 64;   // px — must match CSS .song-item height
+let _vScrollFn = null; // current scroll listener (removed on re-render)
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 function _saveFavs()    { Storage.songs.saveFavs(_favs); }
 function _saveSetlist() { Storage.songs.saveSetlist(_setlist); _updateSetBadge(); }
@@ -161,26 +165,54 @@ function _updateCountBar(n) {
   if (el) el.textContent = `${n} / ${_index.length} பாடல்கள்`;
 }
 
-// ── List rendering ─────────────────────────────────────────────────────────
+// ── List rendering (virtual scroll) ────────────────────────────────────────
 function _renderList(songs) {
   const el = document.getElementById('song-list');
   if (!el) return;
+
+  // Tear down old scroll listener before replacing DOM
+  if (_vScrollFn) {
+    el.removeEventListener('scroll', _vScrollFn);
+    _vScrollFn = null;
+  }
+
   if (!songs.length) {
     el.innerHTML = '<div class="list-empty">பாடல்கள் கிடைக்கவில்லை</div>';
     return;
   }
-  el.innerHTML = songs.map(s => `
-    <div class="song-item" data-id="${s.i}" onclick="openSong(${s.i})">
-      <div class="song-num">${s.n || '—'}</div>
-      <div class="song-info">
-        <div class="song-title">${escHtml(s.t || s.e || '')}</div>
-        ${s.e && s.e !== s.t ? `<div class="song-eng">${escHtml(s.e)}</div>` : ''}
-      </div>
-      <div class="song-badges">
-        ${s.c ? '<div class="badge-chord">♪</div>' : ''}
-        ${_favs.has(s.i) ? '<div class="badge-fav">★</div>' : ''}
-      </div>
-    </div>`).join('');
+
+  // Outer sizer keeps the scrollbar accurate for the full list.
+  // Inner window is a small absolute slice we repaint on scroll.
+  el.innerHTML = `
+    <div id="vl-sizer" style="height:${songs.length * ITEM_H}px;position:relative">
+      <div id="vl-win" style="position:absolute;left:0;right:0;top:0;will-change:transform"></div>
+    </div>`;
+
+  function paint() {
+    const win = document.getElementById('vl-win');
+    if (!win) return;
+    const top  = el.scrollTop;
+    const vis  = el.clientHeight || 600;
+    const start = Math.max(0, Math.floor(top / ITEM_H) - 4);
+    const end   = Math.min(songs.length, Math.ceil((top + vis) / ITEM_H) + 4);
+    win.style.top = (start * ITEM_H) + 'px';
+    win.innerHTML = songs.slice(start, end).map(s => {
+      const eng = s.e && s.e !== s.t ? `<div class="song-eng">${escHtml(s.e)}</div>` : '';
+      const badges = (s.c ? '<div class="badge-chord">♪</div>' : '') +
+                     (_favs.has(s.i) ? '<div class="badge-fav">★</div>' : '');
+      return `<div class="song-item" data-id="${s.i}" onclick="openSong(${s.i})">
+        <div class="song-num">${s.n || '—'}</div>
+        <div class="song-info">
+          <div class="song-title">${escHtml(s.t || s.e || '')}</div>${eng}
+        </div>
+        ${badges ? `<div class="song-badges">${badges}</div>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  paint();
+  _vScrollFn = paint;
+  el.addEventListener('scroll', paint, { passive: true });
 }
 
 // ── Open song ──────────────────────────────────────────────────────────────

@@ -157,10 +157,11 @@ body{
 
 #song-list{flex:1;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
 .song-item{
-  padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;
+  padding:0 16px;border-bottom:1px solid var(--border);cursor:pointer;
   display:flex;align-items:center;gap:10px;
-  transition:background .15s,transform .1s;
-  content-visibility:auto;contain-intrinsic-size:auto 64px;
+  height:64px;box-sizing:border-box;overflow:hidden;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+  transition:background .12s;
 }
 .song-item:active{background:var(--surface2);transform:scale(.99)}
 .song-item.active{
@@ -825,7 +826,7 @@ body{
 .home-card-icon{text-shadow:0 4px 16px rgba(0,0,0,.25);filter:drop-shadow(0 2px 8px rgba(0,0,0,.25))}
 
 /* Song list improvements */
-.song-item{padding:13px 16px;gap:12px}
+.song-item{padding:0 16px;gap:12px}
 .song-num{
   font-size:10px;font-family:monospace;min-width:30px;max-width:30px;height:22px;
   flex-shrink:0;background:var(--surface2);border:1px solid var(--border);
