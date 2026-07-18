@@ -164,6 +164,9 @@ export function setActiveTab(tab, runFilters = true) {
   _chordsOnly = tab === 'chords';
   _favOnly    = tab === 'favs';
   Storage.settings.saveActiveTab(tab);
+  if (tab === 'songs' || tab === 'chords' || tab === 'favs') {
+    document.getElementById('detail-view')?.classList.remove('show');
+  }
 
   ['songs','chords','favs','tracker','piano'].forEach(t => {
     document.getElementById('tab-' + t)?.classList.toggle('active', tab === t);
@@ -389,7 +392,7 @@ function _getScaleNotes(keyStr) {
   const FLATS  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
   const MAJ = [0,2,4,5,7,9,11];
   const MIN = [0,2,3,5,7,8,10];
-  const m = keyStr.match(/^([A-G][#b]?)\s*(major|minor|maj|min)?/i);
+  const m = keyStr.match(/^([A-G][#b]?)[-\s]*(major|minor|maj|min|mak)?/i);
   if (!m) return [];
   const root = m[1];
   const isMinor = (m[2] || '').toLowerCase().startsWith('min');
