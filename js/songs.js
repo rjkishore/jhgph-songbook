@@ -46,6 +46,16 @@ let _foundChordsData = null;
 const ITEM_H   = 64;   // px — must match CSS .song-item height
 let _vScrollFn = null; // current scroll listener (removed on re-render)
 
+// ── Search debounce ────────────────────────────────────────────────────────
+let _searchTimer  = null;
+let _lastQuery    = null; // skip re-render if nothing changed
+let _lastTab      = null;
+
+export function scheduleFilter() {
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(applyFilters, 150);
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 function _saveFavs()    { Storage.songs.saveFavs(_favs); }
 function _saveSetlist() { Storage.songs.saveSetlist(_setlist); _updateSetBadge(); }
@@ -60,6 +70,8 @@ function _updateSetBadge() {
 }
 
 // ── Boot / data loading ────────────────────────────────────────────────────
+let _indexMap = new Map(); // id → index entry for O(1) lookup
+
 export function init(onReady) {
   _applyFontSize();
   _updateSetBadge();
@@ -74,17 +86,21 @@ export function init(onReady) {
     .then(r => r.json())
     .then(data => {
       _index = data;
-      if (fill) fill.style.width = '60%';
+      // Build O(1) lookup map
+      _indexMap.clear();
+      data.forEach(s => _indexMap.set(s.i, s));
+
+      if (fill) fill.style.width = '70%';
       applyFilters();
-      if (fill) fill.style.width = '90%';
-      setTimeout(() => {
+      // Hide splash immediately — list is ready
+      requestAnimationFrame(() => {
         document.getElementById('splash')?.classList.add('hidden');
         if (fill) fill.style.width = '100%';
         onReady?.();
-      }, 200);
+      });
 
-      // Load full song data in background
-      fetch('./songs.json')
+      // Load full song data during idle time — doesn't block UI
+      const loadFull = () => fetch('./songs.json')
         .then(r => r.json())
         .then(songs => {
           const extra = Storage.songs.getExtraChords();
@@ -93,23 +109,19 @@ export function init(onReady) {
               s.chord_lyrics = extra[s.id].chord_lyrics;
               s.chords       = extra[s.id].chords;
             }
-            const src = s.chord_lyrics || s.lyrics || '';
-            s._first = src.split(/<BR>|<slide>/i)[0].trim();
-            const idx = _index.find(x => x.i === s.id);
-            if (idx) idx.fl = s._first;
             _detail[s.id] = s;
           });
           _fullLoaded = true;
-          // If a song is open and was waiting for lyrics, refresh
-          if (_activeSong) {
-            const full = _detail[_activeSong.id];
-            if (full && !_activeSong._fullLoaded) {
-              _activeSong = { ...full, _fullLoaded: true };
-              renderDetail(_activeSong);
-            }
+          // If a song is open waiting for lyrics, refresh now
+          if (_activeSong && !_activeSong._fullLoaded) {
+            const full = _detail[_activeSong.id || _activeSong.i];
+            if (full) { _activeSong = { ...full, _fullLoaded: true }; renderDetail(_activeSong); }
           }
         })
         .catch(() => {});
+
+      if ('requestIdleCallback' in window) requestIdleCallback(loadFull);
+      else setTimeout(loadFull, 300);
     })
     .catch(() => {
       const sub = document.getElementById('splash')?.querySelector('.splash-sub');
@@ -119,9 +131,15 @@ export function init(onReady) {
 
 // ── Filters ───────────────────────────────────────────────────────────────
 export function applyFilters() {
-  const q = document.getElementById('searchbox')?.value.trim().toLowerCase() || '';
+  const q   = document.getElementById('searchbox')?.value.trim().toLowerCase() || '';
+  const key = q + '|' + _activeTab;
+
   const clear = document.getElementById('search-clear');
   if (clear) clear.style.display = q ? 'block' : 'none';
+
+  // Skip full re-render if nothing changed
+  if (key === _lastQuery) return;
+  _lastQuery = key;
 
   let list = _index;
   if (_chordsOnly) list = list.filter(s => s.c);
@@ -130,13 +148,15 @@ export function applyFilters() {
     const n = String(s.n || '');
     return n === q || n.startsWith(q) ||
       (s.t || '').toLowerCase().includes(q) ||
-      (s.e || '').toLowerCase().includes(q) ||
-      (s.fl || '').toLowerCase().includes(q);
+      (s.e || '').toLowerCase().includes(q);
   });
   _filtered = list;
   _renderList(list);
   _updateCountBar(list.length);
 }
+
+// force re-render (used after fav toggle etc.)
+export function invalidateList() { _lastQuery = null; applyFilters(); }
 
 export function setActiveTab(tab, runFilters = true) {
   _activeTab  = tab;
@@ -213,15 +233,29 @@ function _renderList(songs) {
   paint();
   _vScrollFn = paint;
   el.addEventListener('scroll', paint, { passive: true });
+
+  // Instant visual tap feedback via event delegation (no 300ms delay)
+  el.addEventListener('touchstart', e => {
+    const item = e.target.closest('.song-item');
+    if (item) item.style.background = 'var(--surface2)';
+  }, { passive: true });
+  el.addEventListener('touchend', e => {
+    const item = e.target.closest('.song-item');
+    if (item) setTimeout(() => { item.style.background = ''; }, 150);
+  }, { passive: true });
+  el.addEventListener('touchcancel', () => {
+    document.querySelectorAll('.song-item[style]').forEach(el => { el.style.background = ''; });
+  }, { passive: true });
 }
 
 // ── Open song ──────────────────────────────────────────────────────────────
 export function openSong(id) {
-  document.querySelectorAll('.song-item').forEach(el => el.classList.remove('active'));
+  // Instant active highlight — no querySelectorAll over all items (virtual scroll means few DOM nodes)
+  document.querySelectorAll('.song-item.active').forEach(el => el.classList.remove('active'));
   const item = document.querySelector(`.song-item[data-id="${id}"]`);
-  if (item) { item.classList.add('active'); item.scrollIntoView({ block: 'nearest' }); }
+  if (item) { item.classList.add('active'); item.style.background = ''; }
 
-  const idx  = _index.find(s => s.i === id);
+  const idx  = _indexMap.get(id);  // O(1) instead of O(n) find
   const full = _detail[id];
   _activeSong = full ? { ...full, _fullLoaded: true } : { id, ...(idx || {}), i: id, _fullLoaded: false };
   _transpose  = 0;
@@ -468,7 +502,7 @@ export function toggleFav(id) {
   const badges = document.querySelector(`.song-item[data-id="${id}"] .song-badges`);
   if (_favs.has(id) && !li && badges) badges.insertAdjacentHTML('beforeend', '<div class="badge-fav">★</div>');
   else if (!_favs.has(id) && li) li.remove();
-  if (_favOnly) applyFilters();
+  if (_favOnly) invalidateList();
 }
 
 // ── Set list ───────────────────────────────────────────────────────────────

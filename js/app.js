@@ -6,7 +6,7 @@ import { applyTheme, toggleTheme, initInstallPrompt,
 import { Nav }                                            from './navigation.js';
 import {
   init           as songsInit,
-  applyFilters, setActiveTab, toggleFilter,
+  applyFilters, scheduleFilter, invalidateList, setActiveTab, toggleFilter,
   openSong, closeDetailView, renderDetail,
   renderLyrics, changeTranspose, toggleChordsVis, changeFont,
   toggleFav, toggleSetlist,
@@ -35,7 +35,7 @@ import { initPiano }   from './piano.js';
 // ── Expose all functions needed by inline HTML onclick="" ──────────────────
 Object.assign(window, {
   // songs
-  applyFilters, setActiveTab, toggleFilter,
+  applyFilters, scheduleFilter, invalidateList, setActiveTab, toggleFilter,
   openSong, renderLyrics, changeTranspose, toggleChordsVis, changeFont,
   toggleFav, toggleSetlist,
   openSetlistSheet, closeSetlistSheet, clearSetlist,
@@ -150,10 +150,10 @@ Nav.on('bible', ({ fromPopstate } = {}) => {
   // Bible theme toggle button
   document.getElementById('bible-theme-btn')?.addEventListener('click', toggleTheme);
 
-  // Search input live filter
-  document.getElementById('searchbox')?.addEventListener('input', e => applyFilters());
+  // Search input — debounced so fast typing doesn't block the UI
+  document.getElementById('searchbox')?.addEventListener('input', scheduleFilter);
   document.getElementById('search-clear')?.addEventListener('click', () => {
     const sb = document.getElementById('searchbox');
-    if (sb) { sb.value = ''; applyFilters(); sb.focus(); }
+    if (sb) { sb.value = ''; invalidateList(); sb.focus(); }
   });
 })();

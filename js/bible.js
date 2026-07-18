@@ -238,13 +238,22 @@ export async function renderBibleReader(bookIdx, ch, highlightVerse) {
     ? `<div class="bible-reader-title">${book.e} — Chapter ${ch} ${vjBtn}</div>`
     : `<div class="bible-reader-title">${book.t} — அதிகாரம் ${ch} ${vjBtn}</div>`;
 
-  el.innerHTML = `${backBtn}${title}
-    <div class="bible-loader"><div class="bible-spinner"></div>வசனங்கள் ஏற்றுகிறது...</div>`;
-  el.scrollTop = 0;
+  // Check if already cached — render instantly, skip spinner
+  const tamCacheKey = `njp-bc-tam-${bookIdx}-${ch}`;
+  const kjvCacheKey = `njp-bc-kjv-${bookIdx}-${ch}`;
+  const hasTamCache = !!localStorage.getItem(tamCacheKey) || !!localStorage.getItem(`njp-bc-${bookIdx}-${ch}`);
+  const hasKjvCache = !!localStorage.getItem(kjvCacheKey);
+  const needTamil   = _lang === 'tamil'   || _lang === 'both';
+  const needEnglish = _lang === 'english'  || _lang === 'both';
+  const isFullyCached = (needTamil ? hasTamCache : true) && (needEnglish ? hasKjvCache : true);
+
+  if (!isFullyCached) {
+    el.innerHTML = `${backBtn}${title}
+      <div class="bible-loader"><div class="bible-spinner"></div>வசனங்கள் ஏற்றுகிறது...</div>`;
+    el.scrollTop = 0;
+  }
 
   try {
-    const needTamil   = _lang === 'tamil'   || _lang === 'both';
-    const needEnglish = _lang === 'english'  || _lang === 'both';
     const [tamData, kjvData] = await Promise.all([
       needTamil   ? _fetchChapter('tam', bookIdx, ch).catch(() => null) : Promise.resolve(null),
       needEnglish ? _fetchChapter('kjv', bookIdx, ch).catch(() => null) : Promise.resolve(null),

@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>JHGPH Songbook</title>
 <link rel="manifest" href="./manifest.json">
+<link rel="preload" href="./songs-index.json" as="fetch" crossorigin>
+<link rel="preload" href="./js/app.js" as="script">
+<link rel="modulepreload" href="./js/songs.js">
+<link rel="modulepreload" href="./js/storage.js">
+<link rel="modulepreload" href="./js/navigation.js">
+<link rel="modulepreload" href="./js/ui.js">
 <meta name="theme-color" content="#1a1a2e">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -126,7 +132,7 @@ body{
 @keyframes pulse-mic{0%,100%{opacity:1}50%{opacity:.4}}
 
 /* ── Content area ── */
-.content-area{flex:1;display:flex;overflow:hidden;position:relative}
+.content-area{flex:1;display:flex;overflow:hidden;position:relative;contain:layout style}
 
 /* ── List view ── */
 #list-view{
@@ -155,7 +161,7 @@ body{
   box-shadow:0 2px 12px rgba(245,158,11,.4);
 }
 
-#song-list{flex:1;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
+#song-list{flex:1;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;contain:strict}
 .song-item{
   padding:0 16px;border-bottom:1px solid var(--border);cursor:pointer;
   display:flex;align-items:center;gap:10px;
@@ -163,7 +169,7 @@ body{
   touch-action:manipulation;-webkit-tap-highlight-color:transparent;
   transition:background .12s;
 }
-.song-item:active{background:var(--surface2);transform:scale(.99)}
+.song-item:active{background:var(--surface2)}
 .song-item.active{
   background:linear-gradient(90deg,rgba(129,140,248,.15),transparent);
   border-left:3px solid var(--accent);
@@ -191,7 +197,7 @@ body{
 #detail-view{
   position:absolute;inset:0;
   background:var(--bg);overflow-y:auto;overscroll-behavior:contain;
-  transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  transform:translateX(100%);transition:transform .2s cubic-bezier(.4,0,.2,1);
   will-change:transform;
 }
 #detail-view.show{transform:translateX(0)}
