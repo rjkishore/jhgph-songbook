@@ -31,6 +31,8 @@ export const Storage = {
     saveFontSize: (n) => _set('njp-fontsize', String(n)),
     getExtraChords: () => _getJson('njp-extra-chords', {}),
     saveExtraChords:(o)=> _setJson('njp-extra-chords', o),
+    getExtraKeys:   () => _getJson('njp-extra-keys', {}),
+    saveExtraKeys:  (o)=> _setJson('njp-extra-keys', o),
   },
 
   bible: {

@@ -41,6 +41,7 @@ let _fontSize   = Storage.songs.getFontSize();
 let _favs       = Storage.songs.getFavs();
 let _setlist    = Storage.songs.getSetlist();
 let _foundChordsData = null;
+let _extraKeys = Storage.songs.getExtraKeys(); // id→custom key string
 
 // ── Virtual scroll ─────────────────────────────────────────────────────────
 const ITEM_H   = 64;   // px — must match CSS .song-item height
@@ -289,6 +290,98 @@ export function closeDetailView() {
   });
 }
 
+// ── Key edit helpers ───────────────────────────────────────────────────────
+function _getEffectiveKey(song) {
+  const id = song.id || song.i;
+  return _extraKeys[id] || song.key || song.k || '';
+}
+
+export function editSongKey(id) {
+  const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const song  = _activeSong;
+  const cur   = _extraKeys[id] || (song ? (song.key || song.k || '') : '');
+  const curNote = cur.replace(/\s*(major|minor|maj|min).*/i, '').trim();
+  const curMode = /min/i.test(cur) ? 'minor' : 'major';
+
+  const noteBtns = NOTES.map(n =>
+    `<button class="kp-note${n===curNote?' kp-active':''}" onclick="window._kpSelectNote(this,'${n}')">${n}</button>`
+  ).join('');
+
+  const picker = document.createElement('div');
+  picker.id = 'key-picker-overlay';
+  picker.innerHTML = `
+    <div class="key-picker-box">
+      <div class="kp-title">Select Key for this Song</div>
+      <div class="kp-notes" id="kp-notes">${noteBtns}</div>
+      <div class="kp-mode-row">
+        <label class="kp-mode-label">
+          <input type="radio" name="kp-mode" value="major"${curMode==='major'?' checked':''}> Major
+        </label>
+        <label class="kp-mode-label">
+          <input type="radio" name="kp-mode" value="minor"${curMode==='minor'?' checked':''}> Minor
+        </label>
+      </div>
+      <div class="kp-scale-preview" id="kp-scale-preview"></div>
+      <div class="kp-actions">
+        <button class="kp-save" onclick="window._kpConfirm(${id})">✓ Save</button>
+        ${cur ? `<button class="kp-clear" onclick="clearSongKey(${id})">✕ Clear</button>` : ''}
+        <button class="kp-cancel" onclick="document.getElementById('key-picker-overlay')?.remove()">Cancel</button>
+      </div>
+    </div>`;
+  document.body.appendChild(picker);
+  picker.addEventListener('click', e => { if (e.target === picker) picker.remove(); });
+
+  // live scale preview when note or mode changes
+  window._kpSelectNote = (btn, note) => {
+    picker.querySelectorAll('.kp-note').forEach(b => b.classList.remove('kp-active'));
+    btn.classList.add('kp-active');
+    _kpUpdatePreview(picker);
+  };
+  picker.querySelectorAll('input[name="kp-mode"]').forEach(r =>
+    r.addEventListener('change', () => _kpUpdatePreview(picker))
+  );
+  window._kpConfirm = (songId) => {
+    const note = picker.querySelector('.kp-note.kp-active')?.textContent;
+    const mode = picker.querySelector('input[name="kp-mode"]:checked')?.value || 'major';
+    if (note) saveSongKey(songId, note, mode);
+  };
+
+  // show initial preview
+  _kpUpdatePreview(picker);
+}
+
+function _kpUpdatePreview(picker) {
+  const note = picker.querySelector('.kp-note.kp-active')?.textContent;
+  const mode = picker.querySelector('input[name="kp-mode"]:checked')?.value || 'major';
+  if (!note) return;
+  const notes = _getScaleNotes(note + ' ' + mode);
+  const prev = picker.querySelector('#kp-scale-preview');
+  if (prev) prev.innerHTML = notes.map((n, i) =>
+    `<span class="scale-note${(i===0||i===notes.length-1)?' root':''}">${n}</span>`
+  ).join('');
+}
+
+export function saveSongKey(id, note, mode) {
+  const newKey = note + (mode === 'minor' ? ' minor' : '');
+  _extraKeys[id] = newKey;
+  Storage.songs.saveExtraKeys(_extraKeys);
+  document.getElementById('key-picker-overlay')?.remove();
+  if (_activeSong && (_activeSong.id === id || _activeSong.i === id)) {
+    renderDetail(_activeSong);
+    showToast('Key set to ' + newKey);
+  }
+}
+
+export function clearSongKey(id) {
+  delete _extraKeys[id];
+  Storage.songs.saveExtraKeys(_extraKeys);
+  document.getElementById('key-picker-overlay')?.remove();
+  if (_activeSong && (_activeSong.id === id || _activeSong.i === id)) {
+    renderDetail(_activeSong);
+    showToast('Key reset to original');
+  }
+}
+
 // ── Scale notes ────────────────────────────────────────────────────────────
 function _getScaleNotes(keyStr) {
   if (!keyStr) return [];
@@ -313,7 +406,7 @@ export function renderDetail(song) {
   const title    = song.title || song.t || song.name || song.e || '';
   const engTitle = song.name  || song.e || '';
   const num      = song.num   || song.n || '';
-  const key      = song.key   || song.k || '';
+  const key      = _getEffectiveKey(song);
   const hasChords = !!(song.chords && song.chord_lyrics);
   const isFav    = _favs.has(id);
   const inSet    = _setlist.includes(id);
@@ -346,10 +439,17 @@ export function renderDetail(song) {
     ? `<button class="action-btn" id="share-btn" onclick="shareSong()">↗ Share</button>` : '';
 
   const scaleNotes = _getScaleNotes(key);
+  const hasOverride = !!_extraKeys[id];
   const scaleHtml  = scaleNotes.length
-    ? `<div class="scale-row">${scaleNotes.map((n,i) =>
-        `<span class="scale-note${(i===0||i===scaleNotes.length-1)?' root':''}">${n}</span>`
-      ).join('')}</div>` : '';
+    ? `<div class="scale-row">
+        ${scaleNotes.map((n,i) =>
+          `<span class="scale-note${(i===0||i===scaleNotes.length-1)?' root':''}">${n}</span>`
+        ).join('')}
+        <button class="scale-edit-btn${hasOverride?' overridden':''}" onclick="editSongKey(${id})" title="Edit key">✏️</button>
+       </div>`
+    : `<div class="scale-row scale-row-empty">
+        <button class="scale-edit-btn" onclick="editSongKey(${id})" title="Set key">✏️ Set Key</button>
+       </div>`;
 
   document.getElementById('detail-inner').innerHTML = `
     <button class="back-btn" onclick="goBack()">← Back</button>

@@ -17,6 +17,7 @@ import {
   findChordsOnline, saveFoundChords, discardFoundChords,
   initVoiceSearch,
   getActiveSong,
+  editSongKey, saveSongKey, clearSongKey,
 } from './songs.js';
 import {
   init           as bibleInit,
@@ -43,6 +44,7 @@ Object.assign(window, {
   renderSetlist, moveSet, removeSet, setlistNav,
   shareSong,
   findChordsOnline, saveFoundChords, discardFoundChords,
+  editSongKey, saveSongKey, clearSongKey,
   // navigation helpers
   goBack:         () => { Nav.back(); },
   goHome:         showHomeScreen,
